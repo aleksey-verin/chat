@@ -28,11 +28,13 @@ const UI_ELEMENTS = {
 const ERROR_TYPE = {
   SERVER_ERROR: 'Ошибка при запросе на сервер. Попробуйте позже..',
   EMAIL_ERROR: 'Неправильный адрес почты. Попробуйте еще раз..',
+  CODE_ERROR: 'Неправильный КОД. Введите еще раз..',
   OTHER_ERROR: 'Другая ошибка',
 }
 const NOTIFICATION = {
   SEND_EMAIL: 'Письмо с кодом успешно отправлено. Проверьте почтовый ящик..',
-  SUCCESS: 'Отлично!',
+  SUCCESS: 'Отлично! Сейчас ваше имя в чате: ',
+  CHANGE_USERNAME: 'Отлично! Вы поменяли имя на: ',
 }
 const TYPE_MODAL_WINDOW = {
   LOGIN: {
@@ -40,7 +42,6 @@ const TYPE_MODAL_WINDOW = {
     TITLE: 'Авторизация',
     CONTENT_TITLE: 'Почта:',
     BUTTON: 'Получить код',
-    INPUT_VALUE: '',
     INPUT_TEXT: 'email',
     PLACEHOLDER: 'Введите адрес почты..',
   },
@@ -49,7 +50,6 @@ const TYPE_MODAL_WINDOW = {
     TITLE: 'Подтверждение',
     CONTENT_TITLE: 'Код:',
     BUTTON: 'Войти',
-    INPUT_VALUE: '',
     INPUT_TEXT: 'text',
     PLACEHOLDER: 'Введите код из письма..',
   },
@@ -58,11 +58,14 @@ const TYPE_MODAL_WINDOW = {
     TITLE: 'Настройки',
     CONTENT_TITLE: 'Имя в чате:',
     BUTTON: '->',
-    INPUT_VALUE: 'Стив',
     INPUT_TEXT: 'text',
     PLACEHOLDER: 'ваше имя в чате..',
   },
 }
+
+console.log(Cookies.get())
+
+let userName = Cookies.get('chat-name') || ''
 
 // ==================  Темы: светлая / темная  ==================
 
@@ -97,12 +100,12 @@ function showError(errorMessage) {
     setTimeout(() => {
       errorBlock.remove()
     }, 1000)
-  }, 3000)
+  }, 5000)
 }
 
-function showNotification(noteMessage) {
+function showNotification(noteMessage, name = '') {
   const noteBlock = document.createElement('div')
-  noteBlock.textContent = noteMessage
+  noteBlock.textContent = noteMessage + name
   noteBlock.classList.add('note-container', 'active')
   UI_ELEMENTS.BODY.append(noteBlock)
 
@@ -111,17 +114,30 @@ function showNotification(noteMessage) {
     setTimeout(() => {
       noteBlock.remove()
     }, 1000)
-  }, 3000)
+  }, 5000)
 }
 
-// ==================    ==================
+// ==================  SPINNER AND DISABLE FORM   ==================
+
+function showSpinnerAndDisableForm(active) {
+  if (active) {
+    UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.add('active')
+    UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = true
+    UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = true
+  } else {
+    UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.remove('active')
+    UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = false
+    UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = false
+  }
+}
+
+// ==================  Открыть шаблон модального окна  ==================
 
 function openModalWindowTemplate({
   NAME,
   TITLE,
   CONTENT_TITLE,
   BUTTON,
-  INPUT_VALUE,
   INPUT_TEXT,
   PLACEHOLDER,
 }) {
@@ -130,7 +146,6 @@ function openModalWindowTemplate({
   UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.add('login-code')
   UI_ELEMENTS.MODAL_WINDOW.CONTENT_TITLE.textContent = CONTENT_TITLE
   UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.textContent = BUTTON
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.value = INPUT_VALUE
   UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.type = INPUT_TEXT
   UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.placeholder = PLACEHOLDER
 
@@ -138,69 +153,38 @@ function openModalWindowTemplate({
     case 'login':
       UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener(
         'submit',
-        loginFunc
+        makeInitialServerRequest
       )
       break
     case 'code':
-      UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener('submit', codeFunc)
-      break
-    case 'setting':
-      UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.remove('login-code')
       UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener(
         'submit',
-        settingFunc
+        saveCodeInCookiesAndGetUserName
       )
+      break
+    case 'settings':
+      UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.remove('login-code')
+      UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.value = userName
+      UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener(
+        'submit',
+        changeUserName
+      )
+      addAbilityToCloseTheWindow()
       break
     default:
       break
   }
 }
 
-// function createCodeWindow() {
-//   console.log('window-code is rendered')
-//   UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener('submit', codeFunc)
-// }
-function codeFunc(event) {
-  event.preventDefault()
-  const token = event.target[0].value
-  Cookies.set('token', token)
+// ==================  Функции на кнопках модального окна ==================
 
-  showNotification(NOTIFICATION.SUCCESS)
-  closeModalWindow()
-  console.log(Cookies.get('token'))
-}
-
-// function createSettingsWindow() {
-//   UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.remove('login-code')
-//   console.log('window-settings is rendered')
-//   UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener('submit', settingFunc)
-// }
-function settingFunc(event) {
-  event.preventDefault()
-  // const token = event.target[0].value
-  let token = Cookies.get('token')
-  const response = fetch('https://edu.strada.one/api/user/me', {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    // {_id: '63d3a641f7b1780011fe683a', name: 'verevaa@yandex.ru', email: 'verevaa@yandex.ru', token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6I…xMjN9.gqh-HoI4991nMS_c-HEvVIcGlDyZkwUcUUt7vV2hXdo', __v: 0},
-  })
-  response.then((answer) => answer.json()).then((result) => console.log(result))
-}
-
-// function createLoginWindow() {
-//   UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener('submit', loginFunc)
-// }
-function loginFunc(event) {
+function makeInitialServerRequest(event) {
   event.preventDefault()
   const userEmail = event.target[0].value
   if (!userEmail.length) {
     return
   }
-  UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.add('active')
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = true
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = true
+  showSpinnerAndDisableForm(true)
 
   const response = fetch('https://edu.strada.one/api/user', {
     method: 'POST',
@@ -217,10 +201,10 @@ function loginFunc(event) {
         showNotification(NOTIFICATION.SEND_EMAIL)
         UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
           'submit',
-          loginFunc
+          makeInitialServerRequest
         )
+        removeListeners()
         openModalWindowTemplate(TYPE_MODAL_WINDOW.CODE)
-        // createCodeWindow()
         return answer.json()
       }
       return showError(ERROR_TYPE.EMAIL_ERROR)
@@ -230,58 +214,160 @@ function loginFunc(event) {
       showError(ERROR_TYPE.SERVER_ERROR)
     })
     .finally(() => {
-      UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.remove('active')
-      UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = false
-      UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = false
+      showSpinnerAndDisableForm(false)
     })
 
   event.target.reset()
 }
 
+function saveCodeInCookiesAndGetUserName(event) {
+  event.preventDefault()
+  const token = event.target[0].value
+  Cookies.set('chat-token', token)
+
+  showSpinnerAndDisableForm(true)
+
+  const response = fetch('https://edu.strada.one/api/user/me', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  response
+    .then((answer) => {
+      if (answer.ok) {
+        UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+          'submit',
+          makeInitialServerRequest
+        )
+        return answer.json()
+      }
+      return showError(ERROR_TYPE.SERVER_ERROR)
+    })
+    .then(({ name }) => {
+      userName = name
+      Cookies.set('chat-name', name)
+      showNotification(NOTIFICATION.SUCCESS, name)
+      removeListeners()
+      closeModalWindow()
+    })
+    .catch(() => {
+      showError(ERROR_TYPE.CODE_ERROR)
+    })
+    .finally(() => {
+      showSpinnerAndDisableForm(false)
+    })
+  console.log(Cookies.get('chat-token'))
+}
+
+function changeUserName(event) {
+  event.preventDefault()
+
+  const newUserName = event.target[0].value
+  if (!newUserName.length) {
+    return
+  }
+  showSpinnerAndDisableForm(true)
+
+  const response = fetch('https://edu.strada.one/api/user', {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('chat-token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: newUserName,
+    }),
+  })
+  response
+    .then((answer) => {
+      if (answer.ok) {
+        showNotification(NOTIFICATION.CHANGE_USERNAME)
+        return answer.json()
+      }
+      return showError(ERROR_TYPE.SERVER_ERROR)
+    })
+    .then(({ name }) => {
+      console.log(name)
+      userName = name
+      Cookies.set('chat-name', name)
+      console.log(Cookies.get())
+    })
+    .catch(() => {
+      showError(ERROR_TYPE.SERVER_ERROR)
+    })
+    .finally(() => {
+      showSpinnerAndDisableForm(false)
+    })
+}
+
 // ==================  ВХОД  ==================
 
-// openModalWindowTemplate(TYPE_MODAL_WINDOW.LOGIN)
+// Cookies.remove()
 
-if (!Cookies.get('token')) {
+if (!Cookies.get('chat-token')) {
   openModalWindowTemplate(TYPE_MODAL_WINDOW.LOGIN)
-  // createLoginWindow()
+}
+
+// ==================  Удаление обработчиков с кнопок  ==================
+
+function removeListeners() {
+  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+    'submit',
+    makeInitialServerRequest
+  )
+  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+    'submit',
+    saveCodeInCookiesAndGetUserName
+  )
+  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+    'submit',
+    changeUserName
+  )
 }
 
 // ==================  Закрытие модального окна  ==================
 
 function closeModalWindow() {
   UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.remove('active')
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener('submit', loginFunc)
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener('submit', codeFunc)
-  UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
-    'submit',
-    settingFunc
-  )
 }
 
-UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.addEventListener('click', () => {
-  closeModalWindow()
-})
-UI_ELEMENTS.MODAL_WINDOW.WINDOW.addEventListener('click', (event) => {
-  if (event.target.classList.contains('window')) {
+function addAbilityToCloseTheWindow() {
+  UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.addEventListener('click', closeOnButton)
+  function closeOnButton() {
     closeModalWindow()
+    UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.removeEventListener(
+      'click',
+      closeOnButton
+    )
   }
-})
-document.addEventListener('keydown', (event) => {
-  if (
-    // eslint-disable-next-line operator-linebreak
-    event.code === 'Escape' &&
-    UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.contains('active')
-  ) {
-    closeModalWindow()
+  UI_ELEMENTS.MODAL_WINDOW.WINDOW.addEventListener('click', closeOnEmptySpace)
+  function closeOnEmptySpace(event) {
+    if (event.target.classList.contains('window')) {
+      closeModalWindow()
+      UI_ELEMENTS.MODAL_WINDOW.WINDOW.removeEventListener(
+        'click',
+        closeOnEmptySpace
+      )
+    }
   }
-})
+  document.addEventListener('keydown', closeOnEscape)
+  function closeOnEscape(event) {
+    if (
+      // eslint-disable-next-line operator-linebreak
+      event.code === 'Escape' &&
+      UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.contains('active')
+    ) {
+      closeModalWindow()
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }
+}
 
 // ==================  Кнопка "настройки"  ==================
 
 UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
   openModalWindowTemplate(TYPE_MODAL_WINDOW.SETTINGS)
-  createSettingsWindow()
 })
 
 // ==================  Добавить НОВОЕ СООБЩЕНИЕ  ==================
