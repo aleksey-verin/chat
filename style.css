@@ -472,8 +472,8 @@ footer {
       -ms-flex-pack: center;
           justify-content: center;
   position: absolute;
-  height: 10%;
-  top: -10%;
+  height: 80px;
+  top: -81px;
   left: 0;
   right: 0;
   color: #fff;
@@ -503,5 +503,9 @@ footer {
   top: 0px;
   -webkit-transition: top 1s ease 0s;
   transition: top 1s ease 0s;
+}
+
+.is-code {
+  margin-top: 8px;
 }
 /*# sourceMappingURL=style.css.map */

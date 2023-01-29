@@ -63,8 +63,6 @@ const TYPE_MODAL_WINDOW = {
   },
 }
 
-console.log(Cookies.get())
-
 let userName = Cookies.get('chat-name') || ''
 
 // ==================  Темы: светлая / темная  ==================
@@ -133,6 +131,27 @@ function showSpinnerAndDisableForm(active) {
 
 // ==================  Открыть шаблон модального окна  ==================
 
+function addAdditionalButton() {
+  const button = document.createElement('button')
+  button.classList.add('is-code')
+  button.textContent = 'Уже есть код'
+  button.addEventListener(
+    'click',
+    () => {
+      openModalWindowTemplate(TYPE_MODAL_WINDOW.CODE)
+      UI_ELEMENTS.MODAL_WINDOW.CONTENT.lastElementChild.remove()
+      UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+        'submit',
+        makeInitialServerRequest
+      )
+    },
+    { once: true }
+  )
+  UI_ELEMENTS.MODAL_WINDOW.CONTENT.append(button)
+}
+
+// ==================  Открыть шаблон модального окна  ==================
+
 function openModalWindowTemplate({
   NAME,
   TITLE,
@@ -155,6 +174,8 @@ function openModalWindowTemplate({
         'submit',
         makeInitialServerRequest
       )
+      addAdditionalButton()
+      // let btn = document.createElement('button')
       break
     case 'code':
       UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener(
@@ -199,11 +220,7 @@ function makeInitialServerRequest(event) {
     .then((answer) => {
       if (answer.ok) {
         showNotification(NOTIFICATION.SEND_EMAIL)
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
-          'submit',
-          makeInitialServerRequest
-        )
-        removeListeners()
+        removeListenersFromModalWindow()
         openModalWindowTemplate(TYPE_MODAL_WINDOW.CODE)
         return answer.json()
       }
@@ -236,10 +253,10 @@ function saveCodeInCookiesAndGetUserName(event) {
   response
     .then((answer) => {
       if (answer.ok) {
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
-          'submit',
-          makeInitialServerRequest
-        )
+        // UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
+        //   'submit',
+        //   makeInitialServerRequest
+        // )
         return answer.json()
       }
       return showError(ERROR_TYPE.SERVER_ERROR)
@@ -248,7 +265,7 @@ function saveCodeInCookiesAndGetUserName(event) {
       userName = name
       Cookies.set('chat-name', name)
       showNotification(NOTIFICATION.SUCCESS, name)
-      removeListeners()
+      removeListenersFromModalWindow()
       closeModalWindow()
     })
     .catch(() => {
@@ -264,7 +281,7 @@ function changeUserName(event) {
   event.preventDefault()
 
   const newUserName = event.target[0].value
-  if (!newUserName.length) {
+  if (!newUserName.length || newUserName === userName) {
     return
   }
   showSpinnerAndDisableForm(true)
@@ -282,13 +299,13 @@ function changeUserName(event) {
   response
     .then((answer) => {
       if (answer.ok) {
-        showNotification(NOTIFICATION.CHANGE_USERNAME)
         return answer.json()
       }
       return showError(ERROR_TYPE.SERVER_ERROR)
     })
     .then(({ name }) => {
       console.log(name)
+      showNotification(NOTIFICATION.CHANGE_USERNAME, name)
       userName = name
       Cookies.set('chat-name', name)
       console.log(Cookies.get())
@@ -303,7 +320,9 @@ function changeUserName(event) {
 
 // ==================  ВХОД  ==================
 
-// Cookies.remove()
+Cookies.remove('chat-name')
+Cookies.remove('chat-token')
+console.log(Cookies.get())
 
 if (!Cookies.get('chat-token')) {
   openModalWindowTemplate(TYPE_MODAL_WINDOW.LOGIN)
@@ -311,7 +330,7 @@ if (!Cookies.get('chat-token')) {
 
 // ==================  Удаление обработчиков с кнопок  ==================
 
-function removeListeners() {
+function removeListenersFromModalWindow() {
   UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
     'submit',
     makeInitialServerRequest
@@ -333,7 +352,6 @@ function closeModalWindow() {
 }
 
 function addAbilityToCloseTheWindow() {
-  UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.addEventListener('click', closeOnButton)
   function closeOnButton() {
     closeModalWindow()
     UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.removeEventListener(
@@ -341,7 +359,7 @@ function addAbilityToCloseTheWindow() {
       closeOnButton
     )
   }
-  UI_ELEMENTS.MODAL_WINDOW.WINDOW.addEventListener('click', closeOnEmptySpace)
+
   function closeOnEmptySpace(event) {
     if (event.target.classList.contains('window')) {
       closeModalWindow()
@@ -351,7 +369,7 @@ function addAbilityToCloseTheWindow() {
       )
     }
   }
-  document.addEventListener('keydown', closeOnEscape)
+
   function closeOnEscape(event) {
     if (
       // eslint-disable-next-line operator-linebreak
@@ -362,6 +380,10 @@ function addAbilityToCloseTheWindow() {
       document.removeEventListener('keydown', closeOnEscape)
     }
   }
+
+  UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.addEventListener('click', closeOnButton)
+  UI_ELEMENTS.MODAL_WINDOW.WINDOW.addEventListener('click', closeOnEmptySpace)
+  document.addEventListener('keydown', closeOnEscape)
 }
 
 // ==================  Кнопка "настройки"  ==================
