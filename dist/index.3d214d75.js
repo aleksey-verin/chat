@@ -572,11 +572,11 @@ const UI_ELEMENTS = {
     TEMPLATE_MESSAGE: document.querySelector("#templateMessage"),
     FORM_MESSAGE: document.querySelector(".send-message"),
     MODAL_WINDOW: {
-        WINDOW: document.querySelector(".window"),
-        CONTAINER: document.querySelector(".window-container"),
+        WINDOW: document.querySelector(".popup"),
+        CONTAINER: document.querySelector(".popup-container"),
         TITLE: document.querySelector(".title__text"),
-        CONTENT: document.querySelector(".window-content"),
-        CONTENT_TITLE: document.querySelector(".content-title"),
+        CONTENT: document.querySelector(".popup-content"),
+        CONTENT_TITLE: document.querySelector(".popup-title"),
         CONTENT_FORM: document.querySelector(".content-form"),
         CONTENT_INPUT: document.querySelector(".content-input"),
         CONTENT_BUTTON: document.querySelector(".content-btn"),
@@ -585,40 +585,44 @@ const UI_ELEMENTS = {
         SPINNER: document.querySelector(".spinner")
     }
 };
-const ERROR_TYPE = {
+const ERROR = {
+    TYPE: "error",
     SERVER_ERROR: "Ошибка при запросе на сервер. Попробуйте позже..",
     EMAIL_ERROR: "Неправильный адрес почты. Попробуйте еще раз..",
     CODE_ERROR: "Неправильный КОД. Введите еще раз..",
-    OTHER_ERROR: "Другая ошибка"
+    OTHER_ERROR: "Ошибка. Попробуйте зайти позже.."
 };
-const NOTIFICATION = {
+const NOTE = {
+    TYPE: "notification",
     SEND_EMAIL: "Письмо с кодом успешно отправлено. Проверьте почтовый ящик..",
     SUCCESS: "Отлично! Сейчас ваше имя в чате: ",
     CHANGE_USERNAME: "Отлично! Вы поменяли имя на: "
 };
 const TYPE_MODAL_WINDOW = {
     LOGIN: {
-        NAME: "login",
+        NAME: "LOGIN",
         TITLE: "Авторизация",
         CONTENT_TITLE: "Почта:",
-        BUTTON: "Получить код",
-        INPUT_TEXT: "email",
+        BUTTON_GO: "Получить код",
+        LINK_CODE: "Уже есть код?",
+        INPUT_TYPE: "email",
         PLACEHOLDER: "Введите адрес почты.."
     },
     CODE: {
-        NAME: "code",
+        NAME: "CODE",
         TITLE: "Подтверждение",
         CONTENT_TITLE: "Код:",
-        BUTTON: "Войти",
-        INPUT_TEXT: "text",
+        BUTTON_GO: "Войти",
+        LINK_CODE: "Не пришло письмо с кодом?",
+        INPUT_TYPE: "text",
         PLACEHOLDER: "Введите код из письма.."
     },
     SETTINGS: {
-        NAME: "settings",
+        NAME: "SETTINGS",
         TITLE: "Настройки",
         CONTENT_TITLE: "Имя в чате:",
-        BUTTON: "->",
-        INPUT_TEXT: "text",
+        BUTTON_GO: "Изменить",
+        INPUT_TYPE: "text",
         PLACEHOLDER: "ваше имя в чате.."
     }
 };
@@ -637,88 +641,145 @@ UI_ELEMENTS.THEME_SWITCHER.addEventListener("change", (event)=>{
     }
 });
 // ==================  ОПОВЕЩЕНИЯ  ==================
-function showError(errorMessage) {
-    const errorBlock = document.createElement("div");
-    errorBlock.textContent = errorMessage;
-    errorBlock.classList.add("error-container", "active");
-    UI_ELEMENTS.BODY.append(errorBlock);
-    setTimeout(()=>{
-        errorBlock.classList.remove("active");
-        setTimeout(()=>{
-            errorBlock.remove();
-        }, 1000);
-    }, 5000);
-}
-function showNotification(noteMessage, name = "") {
+function showNotification(type, noteMessage, name = "") {
     const noteBlock = document.createElement("div");
     noteBlock.textContent = noteMessage + name;
-    noteBlock.classList.add("note-container", "active");
+    if (type === ERROR.TYPE) noteBlock.classList.add("error-container");
+    if (type === NOTE.TYPE) noteBlock.classList.add("note-container");
+    noteBlock.addEventListener("click", ()=>noteBlock.remove());
     UI_ELEMENTS.BODY.append(noteBlock);
     setTimeout(()=>{
-        noteBlock.classList.remove("active");
+        noteBlock.classList.add("active");
         setTimeout(()=>{
-            noteBlock.remove();
-        }, 1000);
-    }, 5000);
+            noteBlock.classList.remove("active");
+            setTimeout(()=>{
+                noteBlock.remove();
+            }, 1000);
+        }, 5000);
+    }, 100);
 }
 // ==================  SPINNER AND DISABLE FORM   ==================
 function showSpinnerAndDisableForm(active) {
-    if (active) {
-        UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.add("active");
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = true;
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = true;
-    } else {
-        UI_ELEMENTS.MODAL_WINDOW.SPINNER.classList.remove("active");
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.disabled = false;
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.disabled = false;
+    const spinner = document.querySelector(".spinner");
+    const linkToCode = document.querySelector(".link-code");
+    const input = document.querySelector(".content-input");
+    const button = document.querySelector(".content-btn");
+    if (input) input.disabled = active;
+    if (button) button.disabled = active;
+    if (spinner) {
+        if (active) spinner.classList.add("active");
+        else spinner.classList.remove("active");
+    }
+    if (linkToCode) {
+        if (active) linkToCode.classList.add("disabled");
+        else linkToCode.classList.remove("disabled");
     }
 }
-// ==================  Открыть шаблон модального окна  ==================
-function addAdditionalButton() {
-    const button = document.createElement("button");
-    button.classList.add("is-code");
-    button.textContent = "Уже есть код";
-    button.addEventListener("click", ()=>{
-        openModalWindowTemplate(TYPE_MODAL_WINDOW.CODE);
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT.lastElementChild.remove();
-        UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener("submit", makeInitialServerRequest);
-    }, {
-        once: true
-    });
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT.append(button);
+// ==================  Закрываем модальное окно  ==================
+function closePopup() {
+    document.querySelector(".popup").remove();
+    console.log((0, _jsCookieDefault.default).get());
 }
-// ==================  Открыть шаблон модального окна  ==================
-function openModalWindowTemplate({ NAME , TITLE , CONTENT_TITLE , BUTTON , INPUT_TEXT , PLACEHOLDER  }) {
-    UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.add("active");
-    UI_ELEMENTS.MODAL_WINDOW.TITLE.textContent = TITLE;
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.add("login-code");
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_TITLE.textContent = CONTENT_TITLE;
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_BUTTON.textContent = BUTTON;
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.type = INPUT_TEXT;
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.placeholder = PLACEHOLDER;
-    switch(NAME){
-        case "login":
-            UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener("submit", makeInitialServerRequest);
-            addAdditionalButton();
+function closePopupByClickOnEmptySpace(event) {
+    if (event.target.classList.contains("popup")) closePopup();
+}
+function closePopupByPressOnEscape(event) {
+    if (event.code === "Escape") closePopup();
+}
+// ==================  Создаем модальное окно  ==================
+function createPopup(type) {
+    const popup = document.createElement("div");
+    popup.classList.add("popup", "active") //
+    ;
+    if (type === TYPE_MODAL_WINDOW.SETTINGS.NAME) {
+        popup.addEventListener("mousedown", closePopupByClickOnEmptySpace, {
+            once: true
+        });
+        popup.addEventListener("keydown", closePopupByPressOnEscape, {
+            once: true
+        });
+    }
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    const popupTitle = document.createElement("div");
+    popupTitle.classList.add("popup-title");
+    const titleText = document.createElement("div");
+    titleText.classList.add("title__text");
+    titleText.textContent = TYPE_MODAL_WINDOW[type].TITLE;
+    const popupContent = document.createElement("div");
+    popupContent.classList.add("popup-content", "login-code") //
+    ;
+    const contentTitle = document.createElement("div");
+    contentTitle.classList.add("content-title");
+    contentTitle.textContent = TYPE_MODAL_WINDOW[type].CONTENT_TITLE;
+    const contentForm = document.createElement("form");
+    contentForm.classList.add("content-form");
+    const contentInput = document.createElement("input");
+    contentInput.classList.add("content-input");
+    contentInput.type = TYPE_MODAL_WINDOW[type].INPUT_TYPE;
+    contentInput.placeholder = TYPE_MODAL_WINDOW[type].PLACEHOLDER;
+    if (!TYPE_MODAL_WINDOW.SETTINGS.NAME) contentInput.autofocus = true;
+    switch(type){
+        case TYPE_MODAL_WINDOW.LOGIN.NAME:
+            contentForm.addEventListener("submit", makeInitialServerRequest);
             break;
-        case "code":
-            UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener("submit", saveCodeInCookiesAndGetUserName);
+        case TYPE_MODAL_WINDOW.CODE.NAME:
+            contentForm.addEventListener("submit", saveCodeInCookiesAndGetUserName);
             break;
-        case "settings":
-            UI_ELEMENTS.MODAL_WINDOW.CONTENT.classList.remove("login-code");
-            UI_ELEMENTS.MODAL_WINDOW.CONTENT_INPUT.value = userName;
-            UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.addEventListener("submit", changeUserName);
-            addAbilityToCloseTheWindow();
+        case TYPE_MODAL_WINDOW.SETTINGS.NAME:
+            contentInput.value = userName;
+            contentForm.addEventListener("submit", changeUserName);
             break;
         default:
             break;
     }
+    const contentButton = document.createElement("button");
+    contentButton.classList.add("content-btn");
+    contentButton.type = "submit";
+    contentButton.textContent = TYPE_MODAL_WINDOW[type].BUTTON_GO;
+    const spinner = document.createElement("img");
+    spinner.classList.add("spinner") //
+    ;
+    spinner.src = "spinner.267ff859.svg" //
+    ;
+    spinner.alt = "spinner";
+    let linkToCode = new DocumentFragment();
+    function openOtherPopup() {
+        closePopup();
+        if (type === TYPE_MODAL_WINDOW.LOGIN.NAME) createPopup(TYPE_MODAL_WINDOW.CODE.NAME);
+        if (type === TYPE_MODAL_WINDOW.CODE.NAME) createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME);
+    }
+    if (type !== TYPE_MODAL_WINDOW.SETTINGS.NAME) {
+        linkToCode = document.createElement("a");
+        linkToCode.classList.add("link-code");
+        linkToCode.textContent = TYPE_MODAL_WINDOW[type].LINK_CODE;
+        linkToCode.addEventListener("click", openOtherPopup, {
+            once: true
+        });
+    }
+    let titleClose = new DocumentFragment();
+    if (type === TYPE_MODAL_WINDOW.SETTINGS.NAME) {
+        titleClose = document.createElement("div");
+        titleClose.classList.add("title__close");
+        titleClose.innerHTML = "&#9587";
+        titleClose.addEventListener("click", ()=>closePopup(), {
+            once: true
+        });
+    }
+    popupTitle.append(titleText, titleClose);
+    contentForm.append(contentInput, contentButton, linkToCode, spinner);
+    popupContent.append(contentTitle, contentForm);
+    popupContainer.append(popupTitle, popupContent);
+    popup.append(popupContainer);
+    UI_ELEMENTS.BODY.append(popup);
+    console.log((0, _jsCookieDefault.default).get());
 }
 // ==================  Функции на кнопках модального окна ==================
 function makeInitialServerRequest(event) {
     event.preventDefault();
     const userEmail = event.target[0].value;
     if (!userEmail.length) return;
+    event.target.reset();
     showSpinnerAndDisableForm(true);
     const response = fetch("https://edu.strada.one/api/user", {
         method: "POST",
@@ -731,23 +792,23 @@ function makeInitialServerRequest(event) {
     });
     response.then((answer)=>{
         if (answer.ok) {
-            showNotification(NOTIFICATION.SEND_EMAIL);
-            removeListenersFromModalWindow();
-            openModalWindowTemplate(TYPE_MODAL_WINDOW.CODE);
+            showNotification(NOTE.TYPE, NOTE.SEND_EMAIL);
+            closePopup();
+            createPopup(TYPE_MODAL_WINDOW.CODE.NAME);
             return answer.json();
         }
-        return showError(ERROR_TYPE.EMAIL_ERROR);
+        return showNotification(ERROR.TYPE, ERROR.EMAIL_ERROR);
     }).then((result)=>console.log(result)).catch(()=>{
-        showError(ERROR_TYPE.SERVER_ERROR);
+        showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
     }).finally(()=>{
         showSpinnerAndDisableForm(false);
     });
-    event.target.reset();
 }
 function saveCodeInCookiesAndGetUserName(event) {
     event.preventDefault();
     const token = event.target[0].value;
-    (0, _jsCookieDefault.default).set("chat-token", token);
+    if (!token.length) return;
+    event.target.reset();
     showSpinnerAndDisableForm(true);
     const response = fetch("https://edu.strada.one/api/user/me", {
         method: "GET",
@@ -756,24 +817,24 @@ function saveCodeInCookiesAndGetUserName(event) {
         }
     });
     response.then((answer)=>{
-        if (answer.ok) // UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener(
-        //   'submit',
-        //   makeInitialServerRequest
-        // )
-        return answer.json();
-        return showError(ERROR_TYPE.SERVER_ERROR);
-    }).then(({ name  })=>{
-        userName = name;
-        (0, _jsCookieDefault.default).set("chat-name", name);
-        showNotification(NOTIFICATION.SUCCESS, name);
-        removeListenersFromModalWindow();
-        closeModalWindow();
-    }).catch(()=>{
-        showError(ERROR_TYPE.CODE_ERROR);
+        if (answer.ok) return answer.json();
+        return showNotification(ERROR.TYPE, ERROR.CODE_ERROR);
+    }).then((json)=>{
+        if (json) {
+            const { name , token: userToken  } = json;
+            userName = name;
+            (0, _jsCookieDefault.default).set("chat-name", name);
+            (0, _jsCookieDefault.default).set("chat-token", userToken);
+            showNotification(NOTE.TYPE, NOTE.SUCCESS, name);
+            closePopup();
+        }
+    }).catch((error)=>{
+        if (error.message === "Failed to fetch") showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
+        else showNotification(ERROR.TYPE, ERROR.OTHER_ERROR);
     }).finally(()=>{
         showSpinnerAndDisableForm(false);
     });
-    console.log((0, _jsCookieDefault.default).get("chat-token"));
+    console.log((0, _jsCookieDefault.default).get());
 }
 function changeUserName(event) {
     event.preventDefault();
@@ -792,15 +853,14 @@ function changeUserName(event) {
     });
     response.then((answer)=>{
         if (answer.ok) return answer.json();
-        return showError(ERROR_TYPE.SERVER_ERROR);
+        return showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
     }).then(({ name  })=>{
-        console.log(name);
-        showNotification(NOTIFICATION.CHANGE_USERNAME, name);
+        showNotification(NOTE.TYPE, NOTE.CHANGE_USERNAME, name);
         userName = name;
         (0, _jsCookieDefault.default).set("chat-name", name);
         console.log((0, _jsCookieDefault.default).get());
     }).catch(()=>{
-        showError(ERROR_TYPE.SERVER_ERROR);
+        showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
     }).finally(()=>{
         showSpinnerAndDisableForm(false);
     });
@@ -808,45 +868,12 @@ function changeUserName(event) {
 // ==================  ВХОД  ==================
 (0, _jsCookieDefault.default).remove("chat-name");
 (0, _jsCookieDefault.default).remove("chat-token");
-console.log((0, _jsCookieDefault.default).get());
-if (!(0, _jsCookieDefault.default).get("chat-token")) openModalWindowTemplate(TYPE_MODAL_WINDOW.LOGIN);
-// ==================  Удаление обработчиков с кнопок  ==================
-function removeListenersFromModalWindow() {
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener("submit", makeInitialServerRequest);
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener("submit", saveCodeInCookiesAndGetUserName);
-    UI_ELEMENTS.MODAL_WINDOW.CONTENT_FORM.removeEventListener("submit", changeUserName);
-}
-// ==================  Закрытие модального окна  ==================
-function closeModalWindow() {
-    UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.remove("active");
-}
-function addAbilityToCloseTheWindow() {
-    function closeOnButton() {
-        closeModalWindow();
-        UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.removeEventListener("click", closeOnButton);
-    }
-    function closeOnEmptySpace(event) {
-        if (event.target.classList.contains("window")) {
-            closeModalWindow();
-            UI_ELEMENTS.MODAL_WINDOW.WINDOW.removeEventListener("click", closeOnEmptySpace);
-        }
-    }
-    function closeOnEscape(event) {
-        if (// eslint-disable-next-line operator-linebreak
-        event.code === "Escape" && UI_ELEMENTS.MODAL_WINDOW.WINDOW.classList.contains("active")) {
-            closeModalWindow();
-            document.removeEventListener("keydown", closeOnEscape);
-        }
-    }
-    UI_ELEMENTS.MODAL_WINDOW.CLOSE_WINDOW.addEventListener("click", closeOnButton);
-    UI_ELEMENTS.MODAL_WINDOW.WINDOW.addEventListener("click", closeOnEmptySpace);
-    document.addEventListener("keydown", closeOnEscape);
-}
-// ==================  Кнопка "настройки"  ==================
+if (!(0, _jsCookieDefault.default).get("chat-token")) createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME);
+// ==================  Кнопка "Настройки"  ==================
 UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener("click", ()=>{
-    openModalWindowTemplate(TYPE_MODAL_WINDOW.SETTINGS);
+    createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME);
 });
-// ==================  Добавить НОВОЕ СООБЩЕНИЕ  ==================
+// ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
 function addMessage(text, type) {
     const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true);
     message.querySelector(".message").classList.add(type);

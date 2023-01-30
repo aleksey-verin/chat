@@ -171,6 +171,7 @@ button:disabled,
 input:disabled {
   color: var(--color-3);
   border: 1px solid var(--color-3);
+  cursor: default;
 }
 input:disabled::placeholder {
   color: var(--color-3);
@@ -180,8 +181,6 @@ input:disabled::placeholder {
 header {
   display: flex;
   justify-content: space-between;
-}
-.settings {
 }
 .exit {
 }
@@ -247,11 +246,10 @@ footer {
   flex: 1 1 auto;
   margin-right: 8px;
 }
-.btn-send {
-}
+
 // =======================    Modal window
 
-.window {
+.popup {
   display: none;
   position: absolute;
   top: 0;
@@ -263,11 +261,11 @@ footer {
   justify-content: center;
   z-index: 2;
 }
-.window.active {
+.popup.active {
   display: flex;
 }
 
-.window-container {
+.popup-container {
   background-color: var(--color-1);
   color: var(--color-5);
   width: 273px;
@@ -279,33 +277,32 @@ footer {
   position: relative;
 }
 
-.window-title {
+.popup-title {
   display: flex;
   justify-content: space-between;
   margin-bottom: 14px;
 }
-.title__text {
-}
 
 .title__close {
   cursor: pointer;
+  color: var(--color-4);
 }
-.close-svg {
-  fill: var(--color-4);
-  opacity: 0.7;
-}
+// .close-svg {
+//   fill: var(--color-4);
+//   opacity: 0.7;
+// }
 
-.window-content {
+.popup-content {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   // justify-content: center;
 }
-.window-content.login-code {
+.popup-content.login-code {
   // justify-content: center;
   margin-top: 25px;
 }
-.window-content.login-code form {
+.popup-content.login-code form {
   flex-direction: column;
 }
 
@@ -322,7 +319,17 @@ footer {
 .content-input {
   flex: 1 1 auto;
 }
-.content-btn {
+
+.link-code {
+  text-align: center;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-top: 5px;
+}
+.link-code.disabled {
+  pointer-events: none;
+  cursor: default;
+  color: var(--color-3);
 }
 
 .spinner {
@@ -421,8 +428,4 @@ footer {
 .note-container.active {
   top: 0px;
   transition: top 1s ease 0s;
-}
-
-.is-code {
-  margin-top: 8px;
 }
