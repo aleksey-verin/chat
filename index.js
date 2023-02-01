@@ -1,4 +1,4 @@
-// import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import Cookies from 'js-cookie'
 
 const UI_ELEMENTS = {
@@ -8,9 +8,12 @@ const UI_ELEMENTS = {
     SETTINGS: document.querySelector('.settings'),
   },
   THEME_SWITCHER: document.querySelector('.theme-switcher input'),
+  CONNECTION_LIGHT: document.querySelector('.connection'),
   MESSAGE_LIST: document.querySelector('main'),
   TEMPLATE_MESSAGE: document.querySelector('#templateMessage'),
   FORM_MESSAGE: document.querySelector('.send-message'),
+  FORM_INPUT: document.querySelector('.input-message'),
+  SCROLL: document.querySelector('.scroll'),
   MODAL_WINDOW: {
     WINDOW: document.querySelector('.popup'),
     CONTAINER: document.querySelector('.popup-container'),
@@ -113,7 +116,39 @@ function showNotification(type, noteMessage, name = '') {
   }, 100)
 }
 
-// ==================  SPINNER AND DISABLE FORM   ==================
+// ==================  LOADING SPINNER AND DISABLE FORM   ==================
+
+function createLoadingSpinner() {
+  const spinner = document.createElement('img')
+  spinner.classList.add('spinner') //
+  spinner.src = 'spinner.267ff859.svg' //
+  spinner.alt = 'spinner'
+  return spinner
+}
+
+// function removeLoadingSpinner() {
+//   document.querySelector('.spinner').remove()
+// }
+
+// function showOnlyOneSpinner(active) {
+//   const spinner = document.querySelector('.spinner')
+//   if (spinner) {
+//     if (active) {
+//       spinner.classList.add('active')
+//     } else {
+//       spinner.classList.remove('active')
+//     }
+//   }
+// }
+
+function showLoadingSpinnerForMessages(active) {
+  const spinner = document.querySelector('.spinner-messages')
+  if (active) {
+    spinner.classList.add('active')
+  } else {
+    spinner.classList.remove('active')
+  }
+}
 
 function showSpinnerAndDisableForm(active) {
   const spinner = document.querySelector('.spinner')
@@ -142,18 +177,18 @@ function showSpinnerAndDisableForm(active) {
 
 // ==================  Закрываем модальное окно  ==================
 
-function closePopup() {
+function removePopup() {
   document.querySelector('.popup').remove()
   console.log(Cookies.get())
 }
 function closePopupByClickOnEmptySpace(event) {
   if (event.target.classList.contains('popup')) {
-    closePopup()
+    removePopup()
   }
 }
 function closePopupByPressOnEscape(event) {
   if (event.code === 'Escape') {
-    closePopup()
+    removePopup()
   }
 }
 
@@ -218,15 +253,12 @@ function createPopup(type) {
   contentButton.type = 'submit'
   contentButton.textContent = TYPE_MODAL_WINDOW[type].BUTTON_GO
 
-  const spinner = document.createElement('img')
-  spinner.classList.add('spinner') //
-  spinner.src = 'spinner.267ff859.svg' //
-  spinner.alt = 'spinner'
+  const spinner = createLoadingSpinner()
 
   let linkToCode = new DocumentFragment()
 
   function openOtherPopup() {
-    closePopup()
+    removePopup()
     if (type === TYPE_MODAL_WINDOW.LOGIN.NAME) {
       createPopup(TYPE_MODAL_WINDOW.CODE.NAME)
     }
@@ -249,7 +281,7 @@ function createPopup(type) {
     titleClose = document.createElement('div')
     titleClose.classList.add('title__close')
     titleClose.innerHTML = '&#9587'
-    titleClose.addEventListener('click', () => closePopup(), { once: true })
+    titleClose.addEventListener('click', () => removePopup(), { once: true })
   }
 
   popupTitle.append(titleText, titleClose)
@@ -289,7 +321,7 @@ function makeInitialServerRequest(event) {
     .then((answer) => {
       if (answer.ok) {
         showNotification(NOTE.TYPE, NOTE.SEND_EMAIL)
-        closePopup()
+        removePopup()
         createPopup(TYPE_MODAL_WINDOW.CODE.NAME)
         return answer.json()
       }
@@ -328,12 +360,14 @@ function saveCodeInCookiesAndGetUserName(event) {
     })
     .then((json) => {
       if (json) {
-        const { name, token: userToken } = json
+        const { name, email, token: userToken } = json
         userName = name
         Cookies.set('chat-name', name)
         Cookies.set('chat-token', userToken)
+        Cookies.set('chat-email', email)
         showNotification(NOTE.TYPE, NOTE.SUCCESS, name)
-        closePopup()
+        removePopup()
+        downloadMessagesFromTheServer()
       }
     })
     .catch((error) => {
@@ -358,7 +392,7 @@ function changeUserName(event) {
   }
   showSpinnerAndDisableForm(true)
 
-  const response = fetch('https://edu.strada.one/api/user', {
+  const response = fetch('https://du.strada.one/api/user', {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${Cookies.get('chat-token')}`,
@@ -389,45 +423,151 @@ function changeUserName(event) {
     })
 }
 
-// ==================  ВХОД  ==================
-
-Cookies.remove('chat-name')
-Cookies.remove('chat-token')
-
-if (!Cookies.get('chat-token')) {
-  createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME)
-}
-
 // ==================  Кнопка "Настройки"  ==================
 
 UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
   createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME)
 })
 
+// ==================  Загрузить все сообщения с сервера  ==================
+
+function renderMessages({ messages }) {
+  // console.log(messages.messages)
+  // messages.messages.forEach((item) => {
+  //   addMessage(item.text, item.user.email, item.user.name, item.createdAt)
+  // })
+
+  for (let i = messages.length - 1; i >= 0; i--) {
+    addMessage(
+      messages[i].text,
+      messages[i].user.email,
+      messages[i].user.name,
+      messages[i].createdAt
+    )
+  }
+}
+
+function downloadMessagesFromTheServer() {
+  console.log(Cookies.get('chat-token'))
+
+  showLoadingSpinnerForMessages(true)
+
+  const response = fetch('https://edu.strada.one/api/messages/', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${Cookies.get('chat-token')}`,
+    },
+  })
+  response
+    .then((answer) => answer.json())
+    .then((json) => {
+      console.log(json)
+      renderMessages(json)
+    })
+    .catch(() => {
+      showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
+    })
+    .finally(() => {
+      showLoadingSpinnerForMessages(false)
+    })
+}
+
+// ==================  Прокрутка вниз по кнопке  ==================
+
+UI_ELEMENTS.SCROLL.addEventListener('click', () => {
+  scrollToLastUserMessage()
+  UI_ELEMENTS.FORM_INPUT.focus()
+})
+UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', (event) => {
+  if (event.target.scrollTop < -50) {
+    UI_ELEMENTS.SCROLL.classList.add('active')
+  } else {
+    UI_ELEMENTS.SCROLL.classList.remove('active')
+  }
+})
+
+// ==================  ВХОД  ==================
+
+// Cookies.remove('chat-name')
+// Cookies.remove('chat-token')
+// Cookies.remove('chat-email')
+
+if (!Cookies.get('chat-token')) {
+  createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME)
+} else {
+  downloadMessagesFromTheServer()
+}
+
+function connectionLight(action) {
+  if (action) {
+    UI_ELEMENTS.CONNECTION_LIGHT.classList.add('connect')
+  } else {
+    UI_ELEMENTS.CONNECTION_LIGHT.classList.remove('connect')
+  }
+}
+
+const socket = new WebSocket(
+  `ws://edu.strada.one/websockets?${Cookies.get('chat-token')}`
+)
+socket.onopen = () => {
+  console.log('Соединение установлено')
+  connectionLight(true)
+}
+socket.onmessage = (event) => {
+  const {
+    createdAt,
+    text,
+    user: { email, name },
+  } = JSON.parse(event.data)
+  addMessage(text, email, name, createdAt)
+  scrollToLastUserMessage()
+}
+socket.onclose = function (event) {
+  console.log('Соединение закрыто', event)
+  connectionLight(false)
+}
+
 // ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
 
-function addMessage(text, type) {
+function addMessage(text, email, name, time) {
   const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true)
-  message.querySelector('.message').classList.add(type)
-
-  const messageText = message.querySelector('.message__text')
-  if (type === 'user') {
-    messageText.textContent = `Я: ${text}`
-  } else {
-    messageText.textContent = `${type}: ${text}`
-  }
-
+  const userEmail = Cookies.get('chat-email')
+  const messageUser = message.querySelector('.message__user')
+  const messageText = message.querySelector('.message-text')
   const messageTime = message.querySelector('.message__time')
-  messageTime.textContent = `${`0${new Date().getHours()}`.slice(-2)}
-  :${`0${new Date().getMinutes()}`.slice(-2)}`
-  // messageTime.textContent = format(new Date(), 'kk:mm')
+  if (email === userEmail) {
+    message.querySelector('.message').classList.add('user')
+  } else {
+    message.querySelector('.message').classList.add('other')
+    messageUser.textContent = name.length > 20 ? `${name.slice(0, 20)}..` : name
+  }
+  messageText.textContent = text
+  const createdAtTime = parseISO(time)
+  messageTime.textContent = format(createdAtTime, 'kk:mm')
   UI_ELEMENTS.MESSAGE_LIST.prepend(message)
 }
 
-UI_ELEMENTS.FORM_MESSAGE.addEventListener('submit', (event) => {
+function scrollToLastUserMessage() {
+  UI_ELEMENTS.MESSAGE_LIST.scrollTo({ top: -1, left: 0, behavior: 'smooth' })
+}
+
+UI_ELEMENTS.FORM_MESSAGE.addEventListener('submit', sendMessage)
+function sendMessage(event) {
   event.preventDefault()
-  if (event.target[0].value.trim().length) {
-    addMessage(event.target[0].value, 'user')
+  const userMessage = event.target[0].value.trim()
+  if (userMessage.length) {
+    socket.send(JSON.stringify({ text: userMessage }))
     event.target.reset()
   }
-})
+}
+
+// {
+// "_id":"63da1a60d1fd72001178338d",
+// "text":"тест",
+// "user":
+//   {"email":"verevaa@yandex.ru",
+//   "name":"Aleksey Verin"},
+// "createdAt":"2023-02-01T07:53:04.163Z",
+// "updatedAt":"2023-02-01T07:53:04.163Z",
+// "__v":0
+// }
