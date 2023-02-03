@@ -437,20 +437,20 @@ function renderMessages({ messages }) {
   //   addMessage(item.text, item.user.email, item.user.name, item.createdAt)
   // })
 
-  for (let i = messages.length - 1; i >= 0; i--) {
+  for (let i = 0; i < messages.length; i++) {
     const currentDate = format(parseISO(messages[i].createdAt), 'dd')
-    let prevDate = null
+    let nextDate = null
     let dateForRender = null
-    if (i < messages.length - 1) {
-      prevDate = format(parseISO(messages[i + 1].createdAt), 'dd')
+    if (i !== messages.length - 1) {
+      nextDate = format(parseISO(messages[i + 1].createdAt), 'dd')
     }
-    if (currentDate !== prevDate && prevDate) {
+    if (currentDate !== nextDate && nextDate) {
       dateForRender = currentDate
     }
-    if (!prevDate) {
+    if (i === messages.length - 1) {
       dateForRender = 'initial'
     }
-    console.log(currentDate, prevDate)
+    console.log(currentDate, nextDate)
 
     addMessage(
       messages[i].text,
@@ -460,6 +460,30 @@ function renderMessages({ messages }) {
       dateForRender
     )
   }
+
+  // for (let i = messages.length - 1; i >= 0; i--) {
+  //   const currentDate = format(parseISO(messages[i].createdAt), 'dd')
+  //   let prevDate = null
+  //   let dateForRender = null
+  //   if (i < messages.length - 1) {
+  //     prevDate = format(parseISO(messages[i + 1].createdAt), 'dd')
+  //   }
+  //   if (currentDate !== prevDate && prevDate) {
+  //     dateForRender = currentDate
+  //   }
+  //   if (!prevDate) {
+  //     dateForRender = 'initial'
+  //   }
+  //   console.log(currentDate, prevDate)
+
+  //   addMessage(
+  //     messages[i].text,
+  //     messages[i].user.email,
+  //     messages[i].user.name,
+  //     messages[i].createdAt,
+  //     dateForRender
+  //   )
+  // }
 }
 
 function downloadMessagesFromTheServer() {
@@ -572,14 +596,14 @@ function addMessage(text, email, name, time, date) {
       dateInList.textContent = format(parseISO(time), 'd MMMM')
     }
     dateInList.classList.add('date')
-    message.append(dateInList)
+    message.prepend(dateInList)
   }
 
   UI_ELEMENTS.MESSAGE_LIST.prepend(message)
 }
 
 function scrollToLastUserMessage() {
-  UI_ELEMENTS.MESSAGE_LIST.scrollTo({ top: -1, left: 0, behavior: 'smooth' })
+  UI_ELEMENTS.MESSAGE_LIST.scrollTo({ top: -9999, left: 0, behavior: 'smooth' })
 }
 
 UI_ELEMENTS.FORM_MESSAGE.addEventListener('submit', sendMessage)
@@ -602,3 +626,42 @@ function sendMessage(event) {
 // "updatedAt":"2023-02-01T07:53:04.163Z",
 // "__v":0
 // }
+
+// //-----------------------------------------------------------------------------
+// // =======================    MAIN
+// main {
+//   border: 1px solid var(--color-4);
+//   border-radius: 5px;
+//   flex: 1 1 auto;
+//   margin: 8px 0;
+//   padding: 8px;
+//   // display: flex;
+//   height: 100%;
+//   // display: unset;
+//   // flex-direction: column-reverse;
+//   // flex-direction: column;
+//   gap: 8px;
+//   // overflow-y: scroll;
+//   overflow: auto;
+//   // -webkit-overflow-scrolling: touch;
+//   position: relative;
+//   // white-space: nowrap;
+// }
+
+// .date {
+//   text-align: center;
+//   color: var(--color-4);
+//   font-style: italic;
+//   position: sticky;
+//   // width: 50px;
+//   // height: 20px;
+//   position: -webkit-sticky;
+//   top: 0;
+//   height: 30px;
+//   // justify-self: flex-start;
+//   // align-self: center;
+//   // align-self: auto;
+//   // top: 0;
+//   // align-self: flex-start;
+// }
+// //-----------------------------------------------------------------------------

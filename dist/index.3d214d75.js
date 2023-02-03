@@ -902,10 +902,19 @@ function renderMessages({ messages  }) {
     // messages.messages.forEach((item) => {
     //   addMessage(item.text, item.user.email, item.user.name, item.createdAt)
     // })
-    for(let i = messages.length - 1; i >= 0; i--)addMessage(messages[i].text, messages[i].user.email, messages[i].user.name, messages[i].createdAt);
+    for(let i = messages.length - 1; i >= 0; i--){
+        const currentDate = (0, _dateFns.format)((0, _dateFns.parseISO)(messages[i].createdAt), "dd");
+        let prevDate = null;
+        let dateForRender = null;
+        if (i < messages.length - 1) prevDate = (0, _dateFns.format)((0, _dateFns.parseISO)(messages[i + 1].createdAt), "dd");
+        if (currentDate !== prevDate && prevDate) dateForRender = currentDate;
+        if (!prevDate) dateForRender = "initial";
+        console.log(currentDate, prevDate);
+        addMessage(messages[i].text, messages[i].user.email, messages[i].user.name, messages[i].createdAt, dateForRender);
+    }
 }
 function downloadMessagesFromTheServer() {
-    console.log((0, _jsCookieDefault.default).get("chat-token"));
+    // console.log(Cookies.get('chat-token'))
     showLoadingSpinnerForMessages(true);
     const response = fetch("https://edu.strada.one/api/messages/", {
         method: "GET",
@@ -925,7 +934,7 @@ function downloadMessagesFromTheServer() {
 // ==================  Прокрутка вниз по кнопке  ==================
 UI_ELEMENTS.SCROLL.addEventListener("click", ()=>{
     scrollToLastUserMessage();
-    UI_ELEMENTS.FORM_INPUT.focus();
+// UI_ELEMENTS.FORM_INPUT.focus()
 });
 UI_ELEMENTS.MESSAGE_LIST.addEventListener("scroll", (event)=>{
     if (event.target.scrollTop < -50) UI_ELEMENTS.SCROLL.classList.add("active");
@@ -941,7 +950,7 @@ function connectionLight(action) {
     if (action) UI_ELEMENTS.CONNECTION_LIGHT.classList.add("connect");
     else UI_ELEMENTS.CONNECTION_LIGHT.classList.remove("connect");
 }
-const socket = new WebSocket(`ws://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
+const socket = new WebSocket(`wss://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
 socket.onopen = ()=>{
     console.log("Соединение установлено");
     connectionLight(true);
@@ -949,14 +958,15 @@ socket.onopen = ()=>{
 socket.onmessage = (event)=>{
     const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);
     addMessage(text, email, name, createdAt);
-    scrollToLastUserMessage();
+    if (email === (0, _jsCookieDefault.default).get("chat-email")) scrollToLastUserMessage();
 };
 socket.onclose = function(event) {
     console.log("Соединение закрыто", event);
     connectionLight(false);
+    window.location.reload();
 };
 // ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
-function addMessage(text, email, name, time) {
+function addMessage(text, email, name, time, date) {
     const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true);
     const userEmail = (0, _jsCookieDefault.default).get("chat-email");
     const messageUser = message.querySelector(".message__user");
@@ -968,8 +978,15 @@ function addMessage(text, email, name, time) {
         messageUser.textContent = name.length > 20 ? `${name.slice(0, 20)}..` : name;
     }
     messageText.textContent = text;
-    const createdAtTime = (0, _dateFns.parseISO)(time);
-    messageTime.textContent = (0, _dateFns.format)(createdAtTime, "kk:mm");
+    // const createdAtTime = parseISO(time)
+    messageTime.textContent = (0, _dateFns.format)((0, _dateFns.parseISO)(time), "HH:mm");
+    if (date) {
+        const dateInList = document.createElement("div");
+        if ((0, _dateFns.format)((0, _dateFns.parseISO)(time), "d MMMM") === (0, _dateFns.format)(new Date(), "d MMMM")) dateInList.textContent = "Today";
+        else dateInList.textContent = (0, _dateFns.format)((0, _dateFns.parseISO)(time), "d MMMM");
+        dateInList.classList.add("date");
+        message.append(dateInList);
+    }
     UI_ELEMENTS.MESSAGE_LIST.prepend(message);
 }
 function scrollToLastUserMessage() {

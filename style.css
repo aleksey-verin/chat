@@ -99,6 +99,7 @@ body[data-theme='light'] {
   --color-3: rgb(210, 210, 210);
   --color-4: rgb(60, 60, 60);
   --color-5: rgb(30, 30, 30);
+  --color-6: rgb(255, 255, 255);
 }
 
 /* Dark theme colors */
@@ -108,6 +109,7 @@ body[data-theme='dark'] {
   --color-3: rgb(60, 60, 60);
   --color-4: rgb(200, 200, 200);
   --color-5: rgb(230, 230, 230);
+  --color-6: rgb(40, 40, 40);
 }
 
 /*--------------------*/
@@ -134,7 +136,7 @@ body {
   min-height: 220px;
   height: 600px;
   background-color: var(--color-1);
-  border-radius: 5px;
+  border-radius: 10px;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   display: -webkit-box;
@@ -231,7 +233,25 @@ main {
           flex-direction: column-reverse;
   gap: 8px;
   overflow-y: scroll;
+  overflow: scroll;
   position: relative;
+}
+
+.date {
+  text-align: center;
+  color: var(--color-4);
+  font-style: italic;
+  background-color: var(--color-4);
+  font-size: 14px;
+  color: var(--color-1);
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 2px 10px;
+  border-radius: 10px;
+  z-index: 1;
+  opacity: 0.5;
 }
 
 .message {
@@ -277,6 +297,11 @@ main {
   overflow-wrap: break-word;
   color: var(--color-5);
   position: relative;
+  margin-bottom: 4px;
+}
+
+.message__content:last-child {
+  margin-bottom: 0;
 }
 
 .message__time {
@@ -304,7 +329,7 @@ main {
   width: 40px;
   height: 40px;
   border-radius: 20px;
-  border: 1px solid var(--color-4);
+  border: 2px solid var(--color-3);
   background-color: var(--color-1);
   opacity: 0.7;
   cursor: pointer;
@@ -320,7 +345,7 @@ main {
   width: 100%;
   height: 100%;
   color: var(--color-4);
-  opacity: 0.7;
+  opacity: 0.8;
   font-size: 46px;
   margin-left: 3px;
   margin-top: 1px;
@@ -486,7 +511,7 @@ footer {
 
 .theme-switcher {
   right: 0;
-  top: 0;
+  top: 1px;
   height: 30px;
   width: 60px;
   position: relative;
@@ -505,12 +530,11 @@ footer {
   display: block;
   height: 30px;
   width: 60px;
-  background-color: var(--color-2);
+  background-color: #d2d2d2;
   border-radius: 50px;
   cursor: pointer;
   -webkit-transition: 0.5s ease background-color;
   transition: 0.5s ease background-color;
-  border: 2px solid var(--color-2);
 }
 
 .theme-switcher label::after {
@@ -519,7 +543,7 @@ footer {
   width: 20px;
   height: 20px;
   border-radius: 50px;
-  background-color: var(--color-4);
+  background-color: var(--color-1);
   top: 50%;
   left: 5px;
   -webkit-transform: translateY(-50%);
@@ -529,8 +553,7 @@ footer {
 }
 
 .theme-switcher input:checked + label {
-  background-color: var(--color-4);
-  border: 2px solid var(--color-2);
+  background-color: #d2d2d2;
 }
 
 .theme-switcher input:checked + label::after {
@@ -584,12 +607,11 @@ footer {
 }
 
 .connection {
-  margin-top: 2px;
-  width: 28px;
-  height: 28px;
-  background-color: #fff;
+  margin-top: 1px;
+  width: 30px;
+  height: 30px;
+  background-color: #d2d2d2;
   border-radius: 50%;
-  border: 2px solid var(--color-2);
   position: relative;
 }
 
@@ -601,7 +623,7 @@ footer {
   border-radius: 50px;
   background-color: lightcoral;
   top: 50%;
-  left: 2px;
+  left: 5px;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
   -webkit-transition: 0.5s ease;

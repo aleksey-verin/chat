@@ -102,6 +102,7 @@ body[data-theme='light'] {
   --color-3: rgb(210, 210, 210);
   --color-4: rgb(60, 60, 60);
   --color-5: rgb(30, 30, 30);
+  --color-6: rgb(255, 255, 255);
 }
 
 /* Dark theme colors */
@@ -111,6 +112,7 @@ body[data-theme='dark'] {
   --color-3: rgb(60, 60, 60);
   --color-4: rgb(200, 200, 200);
   --color-5: rgb(230, 230, 230);
+  --color-6: rgb(40, 40, 40);
 }
 
 /*--------------------*/
@@ -133,7 +135,7 @@ body {
   min-height: 220px;
   height: 600px;
   background-color: var(--color-1);
-  border-radius: 5px;
+  border-radius: 10px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -200,9 +202,48 @@ main {
   // flex-direction: column;
   gap: 8px;
   overflow-y: scroll;
+  overflow: scroll;
   // -webkit-overflow-scrolling: touch;
   position: relative;
 }
+
+.date {
+  text-align: center;
+  color: var(--color-4);
+  font-style: italic;
+  background-color: var(--color-4);
+  font-size: 14px;
+  color: var(--color-1);
+  width: fit-content;
+  margin: 0 auto;
+  padding: 2px 10px;
+  border-radius: 10px;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+// .wrap {
+//   position: relative;
+// }
+
+// .date {
+//   text-align: center;
+//   color: var(--color-4);
+//   font-style: italic;
+//   position: sticky;
+//   // position: -webkit-sticky;
+//   top: 0;
+//   background-color: var(--color-4);
+//   font-size: 14px;
+//   color: var(--color-1);
+//   width: fit-content;
+//   margin: 0 auto;
+//   padding: 2px 10px;
+//   border-radius: 10px;
+//   margin-bottom: 8px;
+//   z-index: 1;
+//   opacity: 0.5;
+// }
 
 .message {
   display: flex;
@@ -233,6 +274,7 @@ main {
   opacity: 0.7;
   font-size: 13px;
   line-height: 17px;
+  // gap: 10px;
   // margin-bottom: 4px;
 }
 
@@ -243,6 +285,10 @@ main {
   overflow-wrap: break-word;
   color: var(--color-5);
   position: relative;
+  margin-bottom: 4px;
+}
+.message__content:last-child {
+  margin-bottom: 0;
 }
 
 .message__time {
@@ -257,6 +303,10 @@ main {
   opacity: 0.5;
 }
 
+// =======================    Date
+
+// =======================    SCROLL BUTTON
+
 .scroll-container {
   position: absolute;
   bottom: 55px;
@@ -270,7 +320,7 @@ main {
   width: 40px;
   height: 40px;
   border-radius: 20px;
-  border: 1px solid var(--color-4);
+  border: 2px solid var(--color-3);
   background-color: var(--color-1);
   opacity: 0.7;
   cursor: pointer;
@@ -286,7 +336,7 @@ main {
   width: 100%;
   height: 100%;
   color: var(--color-4);
-  opacity: 0.7;
+  opacity: 0.8;
   font-size: 46px;
   margin-left: 3px;
   margin-top: 1px;
@@ -411,7 +461,7 @@ footer {
 .theme-switcher {
   // position: absolute;
   right: 0;
-  top: 0;
+  top: 1px;
   height: 30px;
   width: 60px;
   position: relative;
@@ -431,12 +481,11 @@ footer {
   // text-indent: -9999px;
   height: 30px;
   width: 60px;
-  background-color: var(--color-2);
+  background-color: rgb(210, 210, 210);
   border-radius: 50px;
   cursor: pointer;
   transition: 0.5s ease background-color;
-  border: 2px solid var(--color-2);
-  // color: #808080;
+  // border: 2px solid var(--color-2);
 }
 
 .theme-switcher label::after {
@@ -445,7 +494,7 @@ footer {
   width: 20px;
   height: 20px;
   border-radius: 50px;
-  background-color: var(--color-4);
+  background-color: var(--color-1);
   top: 50%;
   left: 5px;
   transform: translateY(-50%);
@@ -453,8 +502,8 @@ footer {
 }
 
 .theme-switcher input:checked + label {
-  background-color: var(--color-4);
-  border: 2px solid var(--color-2);
+  background-color: rgb(210, 210, 210);
+  // border: 2px solid var(--color-2);
 }
 
 .theme-switcher input:checked + label::after {
@@ -498,16 +547,12 @@ footer {
 // =======================    CONNECTION LIGHT
 
 .connection {
-  margin-top: 2px;
-  width: 28px;
-  height: 28px;
-  background-color: #fff;
+  margin-top: 1px;
+  width: 30px;
+  height: 30px;
+  background-color: rgb(210, 210, 210);
   border-radius: 50%;
-  border: 2px solid var(--color-2);
   position: relative;
-  // display: flex;
-  // align-items: center;
-  // justify-content: center;
 }
 
 .connection::after {
@@ -517,32 +562,12 @@ footer {
   height: 20px;
   border-radius: 50px;
   background-color: lightcoral;
+  // border: 1px solid var(--color-6);
   top: 50%;
-  left: 2px;
+  left: 5px;
   transform: translateY(-50%);
   transition: 0.5s ease;
 }
-
-// .connection.connect {
-//   width: 28px;
-//   height: 28px;
-//   background-color: #fff;
-//   border-radius: 50%;
-//   border: 2px solid var(--color-2);
-//   position: relative;
-// }
-// .connection::after {
-//   position: absolute;
-//   content: '';
-//   width: 20px;
-//   height: 20px;
-//   border-radius: 50px;
-//   background-color: lightgreen;
-//   top: 50%;
-//   left: 2px;
-//   transform: translateY(-50%);
-//   transition: 0.5s ease;
-// }
 
 .connection.connect::after {
   background-color: rgb(100, 203, 100);
