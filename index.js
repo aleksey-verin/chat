@@ -12,7 +12,7 @@ const UI_ELEMENTS = {
   MESSAGE_LIST: document.querySelector('main'),
   TEMPLATE_MESSAGE: document.querySelector('#templateMessage'),
   FORM_MESSAGE: document.querySelector('.send-message'),
-  FORM_INPUT: document.querySelector('.input-message'),
+  FORM_TEXTAREA: document.querySelector('.textarea-message'),
   BUTTON_SCROLL: document.querySelector('.scroll'),
   MODAL_WINDOW: {
     WINDOW: document.querySelector('.popup'),
@@ -432,14 +432,14 @@ UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
 
 // ==================  Загрузить все сообщения с сервера  ==================
 
-let allMessages
-let numberOfPages
+let allMessages = []
+// let numberOfPages
 const step = 20
 let start = 0
 let finish = start + step
 
 function renderMessages() {
-  numberOfPages = Math.ceil(allMessages.length / step) // 15
+  // numberOfPages = Math.ceil(allMessages.length / step) // 15
   // console.log(messages.messages)
   // let count = 1
   // console.log(count)
@@ -451,21 +451,9 @@ function renderMessages() {
       item.user.name,
       item.createdAt,
       'any',
-      'all'
+      'allmessages'
     )
   })
-
-  // console.log('render')
-  // for (let i = showFrom; i < showTo; i++) {
-  //   addMessage(
-  //     allMessages[i].text,
-  //     allMessages[i].user.email,
-  //     allMessages[i].user.name,
-  //     allMessages[i].createdAt,
-  //     'any',
-  //     'all'
-  //   )
-  // }
 
   // for (let i = showTo - 1; i >= showFrom; i--) {
   //   const currentDate = format(parseISO(allMessages[i].createdAt), 'dd')
@@ -493,14 +481,6 @@ function renderMessages() {
   // }
 }
 
-// function paginationForMessages() {
-
-//   // showFrom = 0
-//   // showTo = 20
-//   // renderMessages(allMessages.slice(showFrom, showTo))
-//   // console.log(numberOfPages)
-// }
-
 function downloadMessagesFromTheServer() {
   // console.log(Cookies.get('chat-token'))
 
@@ -515,11 +495,11 @@ function downloadMessagesFromTheServer() {
   response
     .then((answer) => answer.json())
     .then((messages) => {
-      console.log(messages)
+      // console.log(messages)
       // renderMessages(messages)
       allMessages = messages.messages
       renderMessages()
-      console.log(allMessages)
+      // console.log(allMessages)
     })
     .catch(() => {
       showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
@@ -606,7 +586,7 @@ socket.onmessage = (event) => {
     user: { email, name },
   } = JSON.parse(event.data)
 
-  addMessage(text, email, name, createdAt, null, null)
+  addMessage(text, email, name, createdAt)
 
   if (
     email === Cookies.get('chat-email') ||
@@ -635,7 +615,7 @@ UI_ELEMENTS.CONNECTION_LIGHT.addEventListener('click', () => {
 
 // ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
 
-function addMessage(text, email, name, time, date, type) {
+function addMessage(text, email, name, time, type) {
   const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true)
   const userEmail = Cookies.get('chat-email')
   const messageUser = message.querySelector('.message__user')
@@ -682,6 +662,8 @@ function sendMessage(event) {
   if (userMessage.length) {
     socket.send(JSON.stringify({ text: userMessage }))
     event.target.reset()
+    Cookies.set('currentInputValue', '')
+    UI_ELEMENTS.FORM_TEXTAREA.style.height = ''
   }
 }
 
@@ -695,3 +677,26 @@ function sendMessage(event) {
 // "updatedAt":"2023-02-01T07:53:04.163Z",
 // "__v":0
 // }
+
+UI_ELEMENTS.FORM_TEXTAREA.addEventListener('input', (e) => {
+  if (parseInt(getComputedStyle(e.target).height) < 100) {
+    e.target.style.height = `${e.target.scrollHeight + 2}px`
+  }
+})
+
+function submitOnEnter(event) {
+  if (event.code === 'Enter' && !event.shiftKey) {
+    const newEvent = new Event('submit')
+    event.target.form.dispatchEvent(newEvent)
+    event.preventDefault()
+  }
+}
+UI_ELEMENTS.FORM_TEXTAREA.addEventListener('keydown', submitOnEnter)
+
+UI_ELEMENTS.FORM_TEXTAREA.addEventListener('input', (e) => {
+  Cookies.set('currentInputValue', e.target.value)
+})
+
+if (Cookies.get('currentInputValue')) {
+  UI_ELEMENTS.FORM_TEXTAREA.value = Cookies.get('currentInputValue')
+}

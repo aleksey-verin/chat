@@ -242,8 +242,13 @@
           </div>
         </main>
         <footer>
-          <form class="send-message" action="">
-            <input class="input-message" type="text" placeholder="сообщение..">
+          <form class="send-message" id="sendmessage" action="">
+            <!-- <input
+              class="input-message"
+              type="text"
+              placeholder="сообщение.."
+            /> -->
+            <textarea class="textarea-message" placeholder="сообщение.." autocomplete="off" autofocus="" form="sendmessage"></textarea>
             <button class="btn-send" type="submit">-></button>
           </form>
         </footer>
