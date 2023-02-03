@@ -185,7 +185,7 @@ main {
   opacity: .5;
   border-radius: 10px;
   margin: 0 auto;
-  padding: 2px 10px;
+  padding: 3px 15px;
   font-size: 14px;
   font-style: italic;
 }
@@ -265,6 +265,10 @@ main {
   border-radius: 20px;
   display: none;
   position: fixed;
+}
+
+.scroll:hover {
+  opacity: 1;
 }
 
 .scroll.active {
@@ -421,11 +425,14 @@ footer {
 }
 
 .theme-switcher label:after {
-  content: "";
+  content: "🔆";
+  text-align: center;
   width: 20px;
   height: 20px;
   background-color: var(--color-1);
   border-radius: 50px;
+  font-size: 10px;
+  line-height: 20px;
   transition: all .5s;
   position: absolute;
   top: 50%;
@@ -438,6 +445,7 @@ footer {
 }
 
 .theme-switcher input:checked + label:after {
+  content: "🌙";
   background-color: var(--color-2);
   left: calc(100% - 25px);
 }
@@ -478,20 +486,25 @@ footer {
 }
 
 .connection {
-  width: 30px;
   height: 30px;
-  background-color: #d2d2d2;
-  border-radius: 50%;
+  width: 60px;
+  color: var(--color-4);
+  cursor: pointer;
+  background-color: #f08080;
+  border-radius: 15px;
   margin-top: 1px;
   position: relative;
 }
 
 .connection:after {
-  content: "";
-  width: 20px;
+  content: "offline";
+  text-align: center;
   height: 20px;
-  background-color: #f08080;
+  width: 50px;
+  background-color: var(--color-1);
   border-radius: 50px;
+  font-size: 12px;
+  line-height: 20px;
   transition: all .5s;
   position: absolute;
   top: 50%;
@@ -499,8 +512,20 @@ footer {
   transform: translateY(-50%);
 }
 
+.connection.connect {
+  background-color: #90ee90;
+}
+
 .connection.connect:after {
-  background-color: #64cb64;
+  content: "online";
+}
+
+.connection:hover {
+  background-color: #eb5d5d;
+}
+
+.connection.connect:hover {
+  background-color: #4aa34a;
 }
 
 /*# sourceMappingURL=index.3a01df49.css.map */

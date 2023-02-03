@@ -13,7 +13,7 @@ const UI_ELEMENTS = {
   TEMPLATE_MESSAGE: document.querySelector('#templateMessage'),
   FORM_MESSAGE: document.querySelector('.send-message'),
   FORM_INPUT: document.querySelector('.input-message'),
-  SCROLL: document.querySelector('.scroll'),
+  BUTTON_SCROLL: document.querySelector('.scroll'),
   MODAL_WINDOW: {
     WINDOW: document.querySelector('.popup'),
     CONTAINER: document.querySelector('.popup-container'),
@@ -392,7 +392,7 @@ function changeUserName(event) {
   }
   showSpinnerAndDisableForm(true)
 
-  const response = fetch('https://du.strada.one/api/user', {
+  const response = fetch('https://edu.strada.one/api/user', {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${Cookies.get('chat-token')}`,
@@ -420,6 +420,7 @@ function changeUserName(event) {
     })
     .finally(() => {
       showSpinnerAndDisableForm(false)
+      window.location.reload()
     })
 }
 
@@ -431,36 +432,74 @@ UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
 
 // ==================  Загрузить все сообщения с сервера  ==================
 
-function renderMessages({ messages }) {
+let allMessages
+let numberOfPages
+const step = 20
+let start = 0
+let finish = start + step
+
+function renderMessages() {
+  numberOfPages = Math.ceil(allMessages.length / step) // 15
   // console.log(messages.messages)
-  // messages.messages.forEach((item) => {
-  //   addMessage(item.text, item.user.email, item.user.name, item.createdAt)
-  // })
+  // let count = 1
+  // console.log(count)
 
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const currentDate = format(parseISO(messages[i].createdAt), 'dd')
-    let prevDate = null
-    let dateForRender = null
-    if (i < messages.length - 1) {
-      prevDate = format(parseISO(messages[i + 1].createdAt), 'dd')
-    }
-    if (currentDate !== prevDate && prevDate) {
-      dateForRender = currentDate
-    }
-    if (!prevDate) {
-      dateForRender = 'initial'
-    }
-    console.log(currentDate, prevDate)
-
+  allMessages.slice(start, finish).forEach((item) => {
     addMessage(
-      messages[i].text,
-      messages[i].user.email,
-      messages[i].user.name,
-      messages[i].createdAt,
-      dateForRender
+      item.text,
+      item.user.email,
+      item.user.name,
+      item.createdAt,
+      'any',
+      'all'
     )
-  }
+  })
+
+  // console.log('render')
+  // for (let i = showFrom; i < showTo; i++) {
+  //   addMessage(
+  //     allMessages[i].text,
+  //     allMessages[i].user.email,
+  //     allMessages[i].user.name,
+  //     allMessages[i].createdAt,
+  //     'any',
+  //     'all'
+  //   )
+  // }
+
+  // for (let i = showTo - 1; i >= showFrom; i--) {
+  //   const currentDate = format(parseISO(allMessages[i].createdAt), 'dd')
+  //   let prevDate = null
+  //   let dateForRender = null
+  //   if (i < allMessages.length - 1) {
+  //     prevDate = format(parseISO(allMessages[i + 1].createdAt), 'dd')
+  //   }
+  //   if (currentDate !== prevDate && prevDate) {
+  //     dateForRender = currentDate
+  //   }
+  //   if (!prevDate) {
+  //     dateForRender = 'initial'
+  //   }
+  //   console.log(currentDate, prevDate)
+
+  //   addMessage(
+  //     allMessages[i].text,
+  //     allMessages[i].user.email,
+  //     allMessages[i].user.name,
+  //     allMessages[i].createdAt,
+  //     dateForRender,
+  //     'all'
+  //   )
+  // }
 }
+
+// function paginationForMessages() {
+
+//   // showFrom = 0
+//   // showTo = 20
+//   // renderMessages(allMessages.slice(showFrom, showTo))
+//   // console.log(numberOfPages)
+// }
 
 function downloadMessagesFromTheServer() {
   // console.log(Cookies.get('chat-token'))
@@ -475,9 +514,12 @@ function downloadMessagesFromTheServer() {
   })
   response
     .then((answer) => answer.json())
-    .then((json) => {
-      console.log(json)
-      renderMessages(json)
+    .then((messages) => {
+      console.log(messages)
+      // renderMessages(messages)
+      allMessages = messages.messages
+      renderMessages()
+      console.log(allMessages)
     })
     .catch(() => {
       showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
@@ -489,17 +531,46 @@ function downloadMessagesFromTheServer() {
 
 // ==================  Прокрутка вниз по кнопке  ==================
 
-UI_ELEMENTS.SCROLL.addEventListener('click', () => {
+UI_ELEMENTS.BUTTON_SCROLL.addEventListener('click', () => {
   scrollToLastUserMessage()
-  // UI_ELEMENTS.FORM_INPUT.focus()
 })
-UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', (event) => {
+
+UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', showScrollButton)
+function showScrollButton(event) {
   if (event.target.scrollTop < -50) {
-    UI_ELEMENTS.SCROLL.classList.add('active')
+    UI_ELEMENTS.BUTTON_SCROLL.classList.add('active')
   } else {
-    UI_ELEMENTS.SCROLL.classList.remove('active')
+    UI_ELEMENTS.BUTTON_SCROLL.classList.remove('active')
   }
-})
+}
+
+UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', scrollMessagesList)
+function scrollMessagesList(event) {
+  const elem = event.target
+  if (
+    elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 &&
+    elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2
+  ) {
+    loadMoreData()
+  }
+}
+function loadMoreData() {
+  if (finish !== allMessages.length) {
+    if (finish >= allMessages.length - step) {
+      finish = allMessages.length
+    } else {
+      finish += step
+    }
+    start += step
+    renderMessages()
+  } else {
+    const allMessagesLoaded = document.createElement('div')
+    allMessagesLoaded.classList.add('date')
+    allMessagesLoaded.textContent = 'Вся история загружена'
+    UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded)
+    UI_ELEMENTS.MESSAGE_LIST.removeEventListener('scroll', scrollMessagesList)
+  }
+}
 
 // ==================  ВХОД  ==================
 
@@ -535,20 +606,36 @@ socket.onmessage = (event) => {
     user: { email, name },
   } = JSON.parse(event.data)
 
-  addMessage(text, email, name, createdAt)
-  if (email === Cookies.get('chat-email')) {
+  addMessage(text, email, name, createdAt, null, null)
+
+  if (
+    email === Cookies.get('chat-email') ||
+    UI_ELEMENTS.MESSAGE_LIST.scrollTop > -300
+  ) {
     scrollToLastUserMessage()
   }
 }
+
 socket.onclose = function (event) {
   console.log('Соединение закрыто', event)
-  connectionLight(false)
-  window.location.reload()
+  if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains('connect')) {
+    connectionLight(false)
+    window.location.reload()
+  }
 }
+
+UI_ELEMENTS.CONNECTION_LIGHT.addEventListener('click', () => {
+  if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains('connect')) {
+    UI_ELEMENTS.CONNECTION_LIGHT.classList.remove('connect')
+    socket.close(1000, 'работа закончена')
+  } else {
+    window.location.reload()
+  }
+})
 
 // ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
 
-function addMessage(text, email, name, time, date) {
+function addMessage(text, email, name, time, date, type) {
   const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true)
   const userEmail = Cookies.get('chat-email')
   const messageUser = message.querySelector('.message__user')
@@ -561,21 +648,27 @@ function addMessage(text, email, name, time, date) {
     messageUser.textContent = name.length > 20 ? `${name.slice(0, 20)}..` : name
   }
   messageText.textContent = text
-  // const createdAtTime = parseISO(time)
   messageTime.textContent = format(parseISO(time), 'HH:mm')
 
-  if (date) {
-    const dateInList = document.createElement('div')
-    if (format(parseISO(time), 'd MMMM') === format(new Date(), 'd MMMM')) {
-      dateInList.textContent = 'Today'
-    } else {
-      dateInList.textContent = format(parseISO(time), 'd MMMM')
-    }
-    dateInList.classList.add('date')
-    message.append(dateInList)
-  }
+  // if (date) {
+  //   const dateInList = document.createElement('div')
+  //   if (format(parseISO(time), 'd MMMM') === format(new Date(), 'd MMMM')) {
+  //     dateInList.textContent = 'Today'
+  //   } else {
+  //     dateInList.textContent = format(parseISO(time), 'd MMMM')
+  //   }
+  //   dateInList.classList.add('date')
+  //   message.append(dateInList)
+  // }
 
-  UI_ELEMENTS.MESSAGE_LIST.prepend(message)
+  // if (showFrom === 0) {
+  //   UI_ELEMENTS.MESSAGE_LIST.prepend(message)
+  // } else {
+  if (type) {
+    UI_ELEMENTS.MESSAGE_LIST.append(message)
+  } else {
+    UI_ELEMENTS.MESSAGE_LIST.prepend(message)
+  }
 }
 
 function scrollToLastUserMessage() {
