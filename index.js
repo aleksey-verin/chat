@@ -58,7 +58,7 @@ function renderMessages(type) {
   if (type) {
     if (finish === allMessages.length) {
       const allMessagesLoaded = document.createElement('div')
-      allMessagesLoaded.classList.add('date')
+      allMessagesLoaded.classList.add('note-messages')
       allMessagesLoaded.textContent = 'Вся история загружена'
       UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded)
       UI_ELEMENTS.MESSAGE_LIST.removeEventListener('scroll', scrollMessagesList)

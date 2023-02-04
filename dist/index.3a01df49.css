@@ -184,7 +184,7 @@ main {
   overflow: scroll;
 }
 
-.date {
+.note-messages {
   text-align: center;
   color: var(--color-4);
   background-color: var(--color-4);

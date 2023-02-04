@@ -25,9 +25,7 @@ function socketConnection() {
       text,
       user: { email, name },
     } = JSON.parse(event.data)
-
     addMessage(text, email, name, createdAt)
-
     if (
       email === Cookies.get('chat-email') ||
       UI_ELEMENTS.MESSAGE_LIST.scrollTop > -300

@@ -598,7 +598,7 @@ function renderMessages(type) {
     if (type) {
         if (finish === allMessages.length) {
             const allMessagesLoaded = document.createElement("div");
-            allMessagesLoaded.classList.add("date");
+            allMessagesLoaded.classList.add("note-messages");
             allMessagesLoaded.textContent = "Вся история загружена";
             (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.append(allMessagesLoaded);
             (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.removeEventListener("scroll", scrollMessagesList);
@@ -681,7 +681,7 @@ function submitOnEnter(event) {
 });
 if ((0, _jsCookieDefault.default).get("currentInputValue")) (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.value = (0, _jsCookieDefault.default).get("chat-currentInputValue");
 
-},{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA","./ui-elements":"ghRIp","./handlers":"hCzvv","./popup":"jpJ9p","./socket":"duoz3"}],"c8bBu":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA","./ui-elements":"ghRIp","./popup":"jpJ9p","./handlers":"hCzvv","./socket":"duoz3"}],"c8bBu":[function(require,module,exports) {
 (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -3895,75 +3895,7 @@ const TYPE_MODAL_WINDOW = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-// ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
-parcelHelpers.export(exports, "showNotification", ()=>showNotification);
-parcelHelpers.export(exports, "changeTheme", ()=>changeTheme);
-// ==================  ПОКАЗ ЗАГРУЗКИ и ОТКЛЮЧЕНИЕ ФОРМЫ   ==================
-parcelHelpers.export(exports, "createLoadingSpinner", ()=>createLoadingSpinner);
-parcelHelpers.export(exports, "showLoadingSpinnerForMessages", ()=>showLoadingSpinnerForMessages);
-parcelHelpers.export(exports, "showSpinnerAndDisableForm", ()=>showSpinnerAndDisableForm);
-var _uiElements = require("./ui-elements");
-function showNotification(type, noteMessage, name = "") {
-    const noteBlock = document.createElement("div");
-    noteBlock.textContent = noteMessage + name;
-    if (type === (0, _uiElements.ERROR).TYPE) noteBlock.classList.add("error-container");
-    if (type === (0, _uiElements.NOTE).TYPE) noteBlock.classList.add("note-container");
-    noteBlock.addEventListener("click", ()=>noteBlock.remove());
-    (0, _uiElements.UI_ELEMENTS).BODY.append(noteBlock);
-    setTimeout(()=>{
-        noteBlock.classList.add("active");
-        setTimeout(()=>{
-            noteBlock.classList.remove("active");
-            setTimeout(()=>{
-                noteBlock.remove();
-            }, 1000);
-        }, 5000);
-    }, 100);
-}
-function changeTheme(event) {
-    if (event.target.checked) {
-        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "dark");
-        localStorage.setItem("theme", JSON.stringify("dark"));
-    } else {
-        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", JSON.stringify("light"));
-    }
-}
-function createLoadingSpinner() {
-    const spinner = document.createElement("img");
-    spinner.classList.add("spinner") //
-    ;
-    spinner.src = "spinner.267ff859.svg" //
-    ;
-    spinner.alt = "spinner";
-    return spinner;
-}
-function showLoadingSpinnerForMessages(active) {
-    const spinner = document.querySelector(".spinner-messages");
-    if (active) spinner.classList.add("active");
-    else spinner.classList.remove("active");
-}
-function showSpinnerAndDisableForm(active) {
-    const spinner = document.querySelector(".spinner");
-    const linkToCode = document.querySelector(".link-code");
-    const input = document.querySelector(".content-input");
-    const button = document.querySelector(".content-btn");
-    if (input) input.disabled = active;
-    if (button) button.disabled = active;
-    if (spinner) {
-        if (active) spinner.classList.add("active");
-        else spinner.classList.remove("active");
-    }
-    if (linkToCode) {
-        if (active) linkToCode.classList.add("disabled");
-        else linkToCode.classList.remove("disabled");
-    }
-}
-
-},{"./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jpJ9p":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jpJ9p":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // ==================  Закрываем модальное окно  ==================
@@ -4179,7 +4111,75 @@ function changeUserName(event) {
     });
 }
 
-},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./socket":"duoz3","./index":"bB7Pu"}],"duoz3":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","./socket":"duoz3","./index":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
+parcelHelpers.export(exports, "showNotification", ()=>showNotification);
+parcelHelpers.export(exports, "changeTheme", ()=>changeTheme);
+// ==================  ПОКАЗ ЗАГРУЗКИ и ОТКЛЮЧЕНИЕ ФОРМЫ   ==================
+parcelHelpers.export(exports, "createLoadingSpinner", ()=>createLoadingSpinner);
+parcelHelpers.export(exports, "showLoadingSpinnerForMessages", ()=>showLoadingSpinnerForMessages);
+parcelHelpers.export(exports, "showSpinnerAndDisableForm", ()=>showSpinnerAndDisableForm);
+var _uiElements = require("./ui-elements");
+function showNotification(type, noteMessage, name = "") {
+    const noteBlock = document.createElement("div");
+    noteBlock.textContent = noteMessage + name;
+    if (type === (0, _uiElements.ERROR).TYPE) noteBlock.classList.add("error-container");
+    if (type === (0, _uiElements.NOTE).TYPE) noteBlock.classList.add("note-container");
+    noteBlock.addEventListener("click", ()=>noteBlock.remove());
+    (0, _uiElements.UI_ELEMENTS).BODY.append(noteBlock);
+    setTimeout(()=>{
+        noteBlock.classList.add("active");
+        setTimeout(()=>{
+            noteBlock.classList.remove("active");
+            setTimeout(()=>{
+                noteBlock.remove();
+            }, 1000);
+        }, 5000);
+    }, 100);
+}
+function changeTheme(event) {
+    if (event.target.checked) {
+        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "dark");
+        localStorage.setItem("theme", JSON.stringify("dark"));
+    } else {
+        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "light");
+        localStorage.setItem("theme", JSON.stringify("light"));
+    }
+}
+function createLoadingSpinner() {
+    const spinner = document.createElement("img");
+    spinner.classList.add("spinner") //
+    ;
+    spinner.src = "spinner.267ff859.svg" //
+    ;
+    spinner.alt = "spinner";
+    return spinner;
+}
+function showLoadingSpinnerForMessages(active) {
+    const spinner = document.querySelector(".spinner-messages");
+    if (active) spinner.classList.add("active");
+    else spinner.classList.remove("active");
+}
+function showSpinnerAndDisableForm(active) {
+    const spinner = document.querySelector(".spinner");
+    const linkToCode = document.querySelector(".link-code");
+    const input = document.querySelector(".content-input");
+    const button = document.querySelector(".content-btn");
+    if (input) input.disabled = active;
+    if (button) button.disabled = active;
+    if (spinner) {
+        if (active) spinner.classList.add("active");
+        else spinner.classList.remove("active");
+    }
+    if (linkToCode) {
+        if (active) linkToCode.classList.add("disabled");
+        else linkToCode.classList.remove("disabled");
+    }
+}
+
+},{"./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"duoz3":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jsCookie = require("js-cookie");
@@ -4232,6 +4232,6 @@ function socketConnection() {
 }
 exports.default = socketConnection;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
+},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
 
 //# sourceMappingURL=index.3d214d75.js.map
