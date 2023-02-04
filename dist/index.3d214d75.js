@@ -661,7 +661,7 @@ function showNotification(type, noteMessage, name = "") {
         }, 5000);
     }, 100);
 }
-// ==================  LOADING SPINNER AND DISABLE FORM   ==================
+// ==================  Показать спиннер и отключить форму   ==================
 function createLoadingSpinner() {
     const spinner = document.createElement("img");
     spinner.classList.add("spinner") //
@@ -671,19 +671,6 @@ function createLoadingSpinner() {
     spinner.alt = "spinner";
     return spinner;
 }
-// function removeLoadingSpinner() {
-//   document.querySelector('.spinner').remove()
-// }
-// function showOnlyOneSpinner(active) {
-//   const spinner = document.querySelector('.spinner')
-//   if (spinner) {
-//     if (active) {
-//       spinner.classList.add('active')
-//     } else {
-//       spinner.classList.remove('active')
-//     }
-//   }
-// }
 function showLoadingSpinnerForMessages(active) {
     const spinner = document.querySelector(".spinner-messages");
     if (active) spinner.classList.add("active");
@@ -917,7 +904,6 @@ function renderMessages(type) {
             if (finish >= allMessages.length - step) finish = allMessages.length;
             else finish += step;
             start += step;
-        // renderMessages()
         }
     }
     console.log(finish);
@@ -953,23 +939,6 @@ function scrollMessagesList(event) {
     const elem = event.target;
     if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) renderMessages("messages");
 }
-// function loadMoreData() {
-//   if (finish === allMessages.length) {
-//     const allMessagesLoaded = document.createElement('div')
-//     allMessagesLoaded.classList.add('date')
-//     allMessagesLoaded.textContent = 'Вся история загружена'
-//     UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded)
-//     UI_ELEMENTS.MESSAGE_LIST.removeEventListener('scroll', scrollMessagesList)
-//   } else {
-//     if (finish >= allMessages.length - step) {
-//       finish = allMessages.length
-//     } else {
-//       finish += step
-//     }
-//     start += step
-//     renderMessages()
-//   }
-// }
 // ==================  ВХОД  ==================
 // Cookies.remove('chat-name')
 // Cookies.remove('chat-token')
@@ -1017,19 +986,6 @@ function addMessage(text, email, name, time, type) {
     }
     messageText.textContent = text;
     messageTime.textContent = (0, _dateFns.format)((0, _dateFns.parseISO)(time), "HH:mm");
-    // if (date) {
-    //   const dateInList = document.createElement('div')
-    //   if (format(parseISO(time), 'd MMMM') === format(new Date(), 'd MMMM')) {
-    //     dateInList.textContent = 'Today'
-    //   } else {
-    //     dateInList.textContent = format(parseISO(time), 'd MMMM')
-    //   }
-    //   dateInList.classList.add('date')
-    //   message.append(dateInList)
-    // }
-    // if (showFrom === 0) {
-    //   UI_ELEMENTS.MESSAGE_LIST.prepend(message)
-    // } else {
     if (type) UI_ELEMENTS.MESSAGE_LIST.append(message);
     else UI_ELEMENTS.MESSAGE_LIST.prepend(message);
 }
@@ -1053,16 +1009,6 @@ function sendMessage(event) {
         UI_ELEMENTS.FORM_TEXTAREA.style.height = "";
     }
 }
-// {
-// "_id":"63da1a60d1fd72001178338d",
-// "text":"тест",
-// "user":
-//   {"email":"verevaa@yandex.ru",
-//   "name":"Aleksey Verin"},
-// "createdAt":"2023-02-01T07:53:04.163Z",
-// "updatedAt":"2023-02-01T07:53:04.163Z",
-// "__v":0
-// }
 UI_ELEMENTS.FORM_TEXTAREA.addEventListener("input", (e)=>{
     if (parseInt(getComputedStyle(e.target).height) < 100) e.target.style.height = `${e.target.scrollHeight + 2}px`;
 });

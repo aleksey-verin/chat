@@ -116,7 +116,7 @@ function showNotification(type, noteMessage, name = '') {
   }, 100)
 }
 
-// ==================  LOADING SPINNER AND DISABLE FORM   ==================
+// ==================  Показать спиннер и отключить форму   ==================
 
 function createLoadingSpinner() {
   const spinner = document.createElement('img')
@@ -125,21 +125,6 @@ function createLoadingSpinner() {
   spinner.alt = 'spinner'
   return spinner
 }
-
-// function removeLoadingSpinner() {
-//   document.querySelector('.spinner').remove()
-// }
-
-// function showOnlyOneSpinner(active) {
-//   const spinner = document.querySelector('.spinner')
-//   if (spinner) {
-//     if (active) {
-//       spinner.classList.add('active')
-//     } else {
-//       spinner.classList.remove('active')
-//     }
-//   }
-// }
 
 function showLoadingSpinnerForMessages(active) {
   const spinner = document.querySelector('.spinner-messages')
@@ -463,7 +448,6 @@ function renderMessages(type) {
         finish += step
       }
       start += step
-      // renderMessages()
     }
   }
   console.log(finish)
@@ -516,23 +500,6 @@ function scrollMessagesList(event) {
     renderMessages('messages')
   }
 }
-// function loadMoreData() {
-//   if (finish === allMessages.length) {
-//     const allMessagesLoaded = document.createElement('div')
-//     allMessagesLoaded.classList.add('date')
-//     allMessagesLoaded.textContent = 'Вся история загружена'
-//     UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded)
-//     UI_ELEMENTS.MESSAGE_LIST.removeEventListener('scroll', scrollMessagesList)
-//   } else {
-//     if (finish >= allMessages.length - step) {
-//       finish = allMessages.length
-//     } else {
-//       finish += step
-//     }
-//     start += step
-//     renderMessages()
-//   }
-// }
 
 // ==================  ВХОД  ==================
 
@@ -603,6 +570,7 @@ function addMessage(text, email, name, time, type) {
   const messageUser = message.querySelector('.message__user')
   const messageText = message.querySelector('.message-text')
   const messageTime = message.querySelector('.message__time')
+
   if (email === userEmail) {
     message.querySelector('.message').classList.add('user')
   } else {
@@ -612,20 +580,6 @@ function addMessage(text, email, name, time, type) {
   messageText.textContent = text
   messageTime.textContent = format(parseISO(time), 'HH:mm')
 
-  // if (date) {
-  //   const dateInList = document.createElement('div')
-  //   if (format(parseISO(time), 'd MMMM') === format(new Date(), 'd MMMM')) {
-  //     dateInList.textContent = 'Today'
-  //   } else {
-  //     dateInList.textContent = format(parseISO(time), 'd MMMM')
-  //   }
-  //   dateInList.classList.add('date')
-  //   message.append(dateInList)
-  // }
-
-  // if (showFrom === 0) {
-  //   UI_ELEMENTS.MESSAGE_LIST.prepend(message)
-  // } else {
   if (type) {
     UI_ELEMENTS.MESSAGE_LIST.append(message)
   } else {
@@ -648,17 +602,6 @@ function sendMessage(event) {
     UI_ELEMENTS.FORM_TEXTAREA.style.height = ''
   }
 }
-
-// {
-// "_id":"63da1a60d1fd72001178338d",
-// "text":"тест",
-// "user":
-//   {"email":"verevaa@yandex.ru",
-//   "name":"Aleksey Verin"},
-// "createdAt":"2023-02-01T07:53:04.163Z",
-// "updatedAt":"2023-02-01T07:53:04.163Z",
-// "__v":0
-// }
 
 UI_ELEMENTS.FORM_TEXTAREA.addEventListener('input', (e) => {
   if (parseInt(getComputedStyle(e.target).height) < 100) {
