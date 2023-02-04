@@ -20,7 +20,6 @@ UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
 
 export function removePopup() {
   document.querySelector('.popup').remove()
-  console.log(Cookies.get())
 }
 export function closePopupByClickOnEmptySpace(event) {
   if (event.target.classList.contains('popup')) {
@@ -134,8 +133,6 @@ export function createPopup(type) {
   popup.append(popupContainer)
 
   UI_ELEMENTS.BODY.append(popup)
-
-  console.log(Cookies.get())
 }
 
 // ==================  Функции на кнопках модального окна ==================
@@ -168,7 +165,6 @@ function userIndentification(event) {
       }
       return showNotification(ERROR.TYPE, ERROR.EMAIL_ERROR)
     })
-    .then((result) => console.log(result))
     .catch(() => {
       showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
     })
@@ -222,7 +218,6 @@ function userAuthentification(event) {
     .finally(() => {
       showSpinnerAndDisableForm(false)
     })
-  console.log(Cookies.get())
 }
 
 function changeUserName(event) {
@@ -255,7 +250,6 @@ function changeUserName(event) {
       showNotification(NOTE.TYPE, NOTE.CHANGE_USERNAME, name)
       userName = name
       Cookies.set('chat-name', name, { expires: 2 })
-      console.log(Cookies.get())
     })
     .catch(() => {
       showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)

@@ -16,7 +16,6 @@ function socketConnection() {
   )
 
   socket.onopen = () => {
-    console.log('Соединение установлено')
     connectionLight(true)
   }
   socket.onmessage = (event) => {
@@ -35,7 +34,6 @@ function socketConnection() {
   }
 
   socket.onclose = (event) => {
-    console.log('Соединение закрыто', event)
     if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains('connect')) {
       connectionLight(false)
       window.location.reload()

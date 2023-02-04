@@ -3917,7 +3917,6 @@ let userName = (0, _jsCookieDefault.default).get("chat-name") || "";
 });
 function removePopup() {
     document.querySelector(".popup").remove();
-    console.log((0, _jsCookieDefault.default).get());
 }
 function closePopupByClickOnEmptySpace(event) {
     if (event.target.classList.contains("popup")) removePopup();
@@ -4005,7 +4004,6 @@ function createPopup(type) {
     popupContainer.append(popupTitle, popupContent);
     popup.append(popupContainer);
     (0, _uiElements.UI_ELEMENTS).BODY.append(popup);
-    console.log((0, _jsCookieDefault.default).get());
 }
 // ==================  Функции на кнопках модального окна ==================
 function userIndentification(event) {
@@ -4031,7 +4029,7 @@ function userIndentification(event) {
             return answer.json();
         }
         return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).EMAIL_ERROR);
-    }).then((result)=>console.log(result)).catch(()=>{
+    }).catch(()=>{
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     }).finally(()=>{
         (0, _handlers.showSpinnerAndDisableForm)(false);
@@ -4076,7 +4074,6 @@ function userAuthentification(event) {
     }).finally(()=>{
         (0, _handlers.showSpinnerAndDisableForm)(false);
     });
-    console.log((0, _jsCookieDefault.default).get());
 }
 function changeUserName(event) {
     event.preventDefault();
@@ -4102,7 +4099,6 @@ function changeUserName(event) {
         (0, _jsCookieDefault.default).set("chat-name", name, {
             expires: 2
         });
-        console.log((0, _jsCookieDefault.default).get());
     }).catch(()=>{
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     }).finally(()=>{
@@ -4193,7 +4189,6 @@ function connectionLight(action) {
 function socketConnection() {
     const socket = new WebSocket(`wss://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
     socket.onopen = ()=>{
-        console.log("Соединение установлено");
         connectionLight(true);
     };
     socket.onmessage = (event)=>{
@@ -4202,7 +4197,6 @@ function socketConnection() {
         if (email === (0, _jsCookieDefault.default).get("chat-email") || (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTop > -300) (0, _index.scrollToLastUserMessage)();
     };
     socket.onclose = (event)=>{
-        console.log("Соединение закрыто", event);
         if ((0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.contains("connect")) {
             connectionLight(false);
             window.location.reload();
