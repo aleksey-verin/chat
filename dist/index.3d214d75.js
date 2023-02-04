@@ -897,46 +897,32 @@ function changeUserName(event) {
 UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener("click", ()=>{
     createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME);
 });
-// ==================  Загрузить все сообщения с сервера  ==================
+// ==================  Загрузить сообщения с сервера (пагинация)  ==================
 let allMessages = [];
-// let numberOfPages
 const step = 20;
 let start = 0;
 let finish = start + step;
-function renderMessages() {
-    // numberOfPages = Math.ceil(allMessages.length / step) // 15
-    // console.log(messages.messages)
-    // let count = 1
-    // console.log(count)
-    allMessages.slice(start, finish).forEach((item)=>{
-        addMessage(item.text, item.user.email, item.user.name, item.createdAt, "any", "allmessages");
+function renderMessages(type) {
+    if (finish !== allMessages.length) allMessages.slice(start, finish).forEach((item)=>{
+        addMessage(item.text, item.user.email, item.user.name, item.createdAt, "messages");
     });
-// for (let i = showTo - 1; i >= showFrom; i--) {
-//   const currentDate = format(parseISO(allMessages[i].createdAt), 'dd')
-//   let prevDate = null
-//   let dateForRender = null
-//   if (i < allMessages.length - 1) {
-//     prevDate = format(parseISO(allMessages[i + 1].createdAt), 'dd')
-//   }
-//   if (currentDate !== prevDate && prevDate) {
-//     dateForRender = currentDate
-//   }
-//   if (!prevDate) {
-//     dateForRender = 'initial'
-//   }
-//   console.log(currentDate, prevDate)
-//   addMessage(
-//     allMessages[i].text,
-//     allMessages[i].user.email,
-//     allMessages[i].user.name,
-//     allMessages[i].createdAt,
-//     dateForRender,
-//     'all'
-//   )
-// }
+    if (type) {
+        if (finish === allMessages.length) {
+            const allMessagesLoaded = document.createElement("div");
+            allMessagesLoaded.classList.add("date");
+            allMessagesLoaded.textContent = "Вся история загружена";
+            UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded);
+            UI_ELEMENTS.MESSAGE_LIST.removeEventListener("scroll", scrollMessagesList);
+        } else {
+            if (finish >= allMessages.length - step) finish = allMessages.length;
+            else finish += step;
+            start += step;
+        // renderMessages()
+        }
+    }
+    console.log(finish);
 }
 function downloadMessagesFromTheServer() {
-    // console.log(Cookies.get('chat-token'))
     showLoadingSpinnerForMessages(true);
     const response = fetch("https://edu.strada.one/api/messages/", {
         method: "GET",
@@ -945,11 +931,8 @@ function downloadMessagesFromTheServer() {
         }
     });
     response.then((answer)=>answer.json()).then((messages)=>{
-        // console.log(messages)
-        // renderMessages(messages)
         allMessages = messages.messages;
         renderMessages();
-    // console.log(allMessages)
     }).catch(()=>{
         showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
     }).finally(()=>{
@@ -968,22 +951,25 @@ function showScrollButton(event) {
 UI_ELEMENTS.MESSAGE_LIST.addEventListener("scroll", scrollMessagesList);
 function scrollMessagesList(event) {
     const elem = event.target;
-    if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) loadMoreData();
+    if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) renderMessages("messages");
 }
-function loadMoreData() {
-    if (finish !== allMessages.length) {
-        if (finish >= allMessages.length - step) finish = allMessages.length;
-        else finish += step;
-        start += step;
-        renderMessages();
-    } else {
-        const allMessagesLoaded = document.createElement("div");
-        allMessagesLoaded.classList.add("date");
-        allMessagesLoaded.textContent = "Вся история загружена";
-        UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded);
-        UI_ELEMENTS.MESSAGE_LIST.removeEventListener("scroll", scrollMessagesList);
-    }
-}
+// function loadMoreData() {
+//   if (finish === allMessages.length) {
+//     const allMessagesLoaded = document.createElement('div')
+//     allMessagesLoaded.classList.add('date')
+//     allMessagesLoaded.textContent = 'Вся история загружена'
+//     UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded)
+//     UI_ELEMENTS.MESSAGE_LIST.removeEventListener('scroll', scrollMessagesList)
+//   } else {
+//     if (finish >= allMessages.length - step) {
+//       finish = allMessages.length
+//     } else {
+//       finish += step
+//     }
+//     start += step
+//     renderMessages()
+//   }
+// }
 // ==================  ВХОД  ==================
 // Cookies.remove('chat-name')
 // Cookies.remove('chat-token')
