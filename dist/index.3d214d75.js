@@ -558,332 +558,34 @@ function hmrAccept(bundle, id) {
 
 },{}],"bB7Pu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "downloadMessagesFromTheServer", ()=>downloadMessagesFromTheServer);
+// ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
+parcelHelpers.export(exports, "addMessage", ()=>addMessage);
+parcelHelpers.export(exports, "scrollToLastUserMessage", ()=>scrollToLastUserMessage);
 var _dateFns = require("date-fns");
 var _jsCookie = require("js-cookie");
 var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
-const UI_ELEMENTS = {
-    BODY: document.querySelector("body"),
-    CONTAINER: document.querySelector(".container"),
-    BUTTONS: {
-        SETTINGS: document.querySelector(".settings")
-    },
-    THEME_SWITCHER: document.querySelector(".theme-switcher input"),
-    CONNECTION_LIGHT: document.querySelector(".connection"),
-    MESSAGE_LIST: document.querySelector("main"),
-    TEMPLATE_MESSAGE: document.querySelector("#templateMessage"),
-    FORM_MESSAGE: document.querySelector(".send-message"),
-    FORM_TEXTAREA: document.querySelector(".textarea-message"),
-    BUTTON_SCROLL: document.querySelector(".scroll"),
-    MODAL_WINDOW: {
-        WINDOW: document.querySelector(".popup"),
-        CONTAINER: document.querySelector(".popup-container"),
-        TITLE: document.querySelector(".title__text"),
-        CONTENT: document.querySelector(".popup-content"),
-        CONTENT_TITLE: document.querySelector(".popup-title"),
-        CONTENT_FORM: document.querySelector(".content-form"),
-        CONTENT_INPUT: document.querySelector(".content-input"),
-        CONTENT_BUTTON: document.querySelector(".content-btn"),
-        CLOSE_WINDOW: document.querySelector(".title__close"),
-        CLOSE_SVG: document.querySelector(".close-svg"),
-        SPINNER: document.querySelector(".spinner")
-    }
-};
-const ERROR = {
-    TYPE: "error",
-    SERVER_ERROR: "Ошибка при запросе на сервер. Попробуйте позже..",
-    EMAIL_ERROR: "Неправильный адрес почты. Попробуйте еще раз..",
-    CODE_ERROR: "Неправильный КОД. Введите еще раз..",
-    OTHER_ERROR: "Ошибка. Попробуйте зайти позже.."
-};
-const NOTE = {
-    TYPE: "notification",
-    SEND_EMAIL: "Письмо с кодом успешно отправлено. Проверьте почтовый ящик..",
-    SUCCESS: "Отлично! Сейчас ваше имя в чате: ",
-    CHANGE_USERNAME: "Отлично! Вы поменяли имя на: "
-};
-const TYPE_MODAL_WINDOW = {
-    LOGIN: {
-        NAME: "LOGIN",
-        TITLE: "Авторизация",
-        CONTENT_TITLE: "Почта:",
-        BUTTON_GO: "Получить код",
-        LINK_CODE: "Уже есть код?",
-        INPUT_TYPE: "email",
-        PLACEHOLDER: "Введите адрес почты.."
-    },
-    CODE: {
-        NAME: "CODE",
-        TITLE: "Подтверждение",
-        CONTENT_TITLE: "Код:",
-        BUTTON_GO: "Войти",
-        LINK_CODE: "Не пришло письмо с кодом?",
-        INPUT_TYPE: "text",
-        PLACEHOLDER: "Введите код из письма.."
-    },
-    SETTINGS: {
-        NAME: "SETTINGS",
-        TITLE: "Настройки",
-        CONTENT_TITLE: "Имя в чате:",
-        BUTTON_GO: "Изменить",
-        INPUT_TYPE: "text",
-        PLACEHOLDER: "ваше имя в чате.."
-    }
-};
-let userName = (0, _jsCookieDefault.default).get("chat-name") || "";
+var _uiElements = require("./ui-elements");
+var _popup = require("./popup");
+var _handlers = require("./handlers");
+var _socket = require("./socket");
+var _socketDefault = parcelHelpers.interopDefault(_socket);
+// ==================  ВХОД  ==================
+// Cookies.remove('chat-name')
+// Cookies.remove('chat-token')
+// Cookies.remove('chat-email')
+// Cookies.remove('currentInputValue')
+if (!(0, _jsCookieDefault.default).get("chat-token")) (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
+else {
+    downloadMessagesFromTheServer();
+    (0, _socketDefault.default)();
+}
 // ==================  Темы: светлая / темная  ==================
 const theme = JSON.parse(localStorage.getItem("theme"));
-if (theme) UI_ELEMENTS.BODY.setAttribute("data-theme", theme);
-if (theme === "dark") UI_ELEMENTS.THEME_SWITCHER.checked = true;
-UI_ELEMENTS.THEME_SWITCHER.addEventListener("change", (event)=>{
-    if (event.target.checked) {
-        UI_ELEMENTS.BODY.setAttribute("data-theme", "dark");
-        localStorage.setItem("theme", JSON.stringify("dark"));
-    } else {
-        UI_ELEMENTS.BODY.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", JSON.stringify("light"));
-    }
-});
-// ==================  ОПОВЕЩЕНИЯ  ==================
-function showNotification(type, noteMessage, name = "") {
-    const noteBlock = document.createElement("div");
-    noteBlock.textContent = noteMessage + name;
-    if (type === ERROR.TYPE) noteBlock.classList.add("error-container");
-    if (type === NOTE.TYPE) noteBlock.classList.add("note-container");
-    noteBlock.addEventListener("click", ()=>noteBlock.remove());
-    UI_ELEMENTS.BODY.append(noteBlock);
-    setTimeout(()=>{
-        noteBlock.classList.add("active");
-        setTimeout(()=>{
-            noteBlock.classList.remove("active");
-            setTimeout(()=>{
-                noteBlock.remove();
-            }, 1000);
-        }, 5000);
-    }, 100);
-}
-// ==================  Показать спиннер и отключить форму   ==================
-function createLoadingSpinner() {
-    const spinner = document.createElement("img");
-    spinner.classList.add("spinner") //
-    ;
-    spinner.src = "spinner.267ff859.svg" //
-    ;
-    spinner.alt = "spinner";
-    return spinner;
-}
-function showLoadingSpinnerForMessages(active) {
-    const spinner = document.querySelector(".spinner-messages");
-    if (active) spinner.classList.add("active");
-    else spinner.classList.remove("active");
-}
-function showSpinnerAndDisableForm(active) {
-    const spinner = document.querySelector(".spinner");
-    const linkToCode = document.querySelector(".link-code");
-    const input = document.querySelector(".content-input");
-    const button = document.querySelector(".content-btn");
-    if (input) input.disabled = active;
-    if (button) button.disabled = active;
-    if (spinner) {
-        if (active) spinner.classList.add("active");
-        else spinner.classList.remove("active");
-    }
-    if (linkToCode) {
-        if (active) linkToCode.classList.add("disabled");
-        else linkToCode.classList.remove("disabled");
-    }
-}
-// ==================  Закрываем модальное окно  ==================
-function removePopup() {
-    document.querySelector(".popup").remove();
-    console.log((0, _jsCookieDefault.default).get());
-}
-function closePopupByClickOnEmptySpace(event) {
-    if (event.target.classList.contains("popup")) removePopup();
-}
-function closePopupByPressOnEscape(event) {
-    if (event.code === "Escape") removePopup();
-}
-// ==================  Создаем модальное окно  ==================
-function createPopup(type) {
-    const popup = document.createElement("div");
-    popup.classList.add("popup", "active") //
-    ;
-    if (type === TYPE_MODAL_WINDOW.SETTINGS.NAME) {
-        popup.addEventListener("mousedown", closePopupByClickOnEmptySpace, {
-            once: true
-        });
-        popup.addEventListener("keydown", closePopupByPressOnEscape, {
-            once: true
-        });
-    }
-    const popupContainer = document.createElement("div");
-    popupContainer.classList.add("popup-container");
-    const popupTitle = document.createElement("div");
-    popupTitle.classList.add("popup-title");
-    const titleText = document.createElement("div");
-    titleText.classList.add("title__text");
-    titleText.textContent = TYPE_MODAL_WINDOW[type].TITLE;
-    const popupContent = document.createElement("div");
-    popupContent.classList.add("popup-content", "login-code") //
-    ;
-    const contentTitle = document.createElement("div");
-    contentTitle.classList.add("content-title");
-    contentTitle.textContent = TYPE_MODAL_WINDOW[type].CONTENT_TITLE;
-    const contentForm = document.createElement("form");
-    contentForm.classList.add("content-form");
-    const contentInput = document.createElement("input");
-    contentInput.classList.add("content-input");
-    contentInput.type = TYPE_MODAL_WINDOW[type].INPUT_TYPE;
-    contentInput.placeholder = TYPE_MODAL_WINDOW[type].PLACEHOLDER;
-    if (!TYPE_MODAL_WINDOW.SETTINGS.NAME) contentInput.autofocus = true;
-    switch(type){
-        case TYPE_MODAL_WINDOW.LOGIN.NAME:
-            contentForm.addEventListener("submit", makeInitialServerRequest);
-            break;
-        case TYPE_MODAL_WINDOW.CODE.NAME:
-            contentForm.addEventListener("submit", saveCodeInCookiesAndGetUserName);
-            break;
-        case TYPE_MODAL_WINDOW.SETTINGS.NAME:
-            contentInput.value = userName;
-            contentForm.addEventListener("submit", changeUserName);
-            break;
-        default:
-            break;
-    }
-    const contentButton = document.createElement("button");
-    contentButton.classList.add("content-btn");
-    contentButton.type = "submit";
-    contentButton.textContent = TYPE_MODAL_WINDOW[type].BUTTON_GO;
-    const spinner = createLoadingSpinner();
-    let linkToCode = new DocumentFragment();
-    function openOtherPopup() {
-        removePopup();
-        if (type === TYPE_MODAL_WINDOW.LOGIN.NAME) createPopup(TYPE_MODAL_WINDOW.CODE.NAME);
-        if (type === TYPE_MODAL_WINDOW.CODE.NAME) createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME);
-    }
-    if (type !== TYPE_MODAL_WINDOW.SETTINGS.NAME) {
-        linkToCode = document.createElement("a");
-        linkToCode.classList.add("link-code");
-        linkToCode.textContent = TYPE_MODAL_WINDOW[type].LINK_CODE;
-        linkToCode.addEventListener("click", openOtherPopup, {
-            once: true
-        });
-    }
-    let titleClose = new DocumentFragment();
-    if (type === TYPE_MODAL_WINDOW.SETTINGS.NAME) {
-        titleClose = document.createElement("div");
-        titleClose.classList.add("title__close");
-        titleClose.innerHTML = "&#9587";
-        titleClose.addEventListener("click", ()=>removePopup(), {
-            once: true
-        });
-    }
-    popupTitle.append(titleText, titleClose);
-    contentForm.append(contentInput, contentButton, linkToCode, spinner);
-    popupContent.append(contentTitle, contentForm);
-    popupContainer.append(popupTitle, popupContent);
-    popup.append(popupContainer);
-    UI_ELEMENTS.BODY.append(popup);
-    console.log((0, _jsCookieDefault.default).get());
-}
-// ==================  Функции на кнопках модального окна ==================
-function makeInitialServerRequest(event) {
-    event.preventDefault();
-    const userEmail = event.target[0].value;
-    if (!userEmail.length) return;
-    event.target.reset();
-    showSpinnerAndDisableForm(true);
-    const response = fetch("https://edu.strada.one/api/user", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: userEmail
-        })
-    });
-    response.then((answer)=>{
-        if (answer.ok) {
-            showNotification(NOTE.TYPE, NOTE.SEND_EMAIL);
-            removePopup();
-            createPopup(TYPE_MODAL_WINDOW.CODE.NAME);
-            return answer.json();
-        }
-        return showNotification(ERROR.TYPE, ERROR.EMAIL_ERROR);
-    }).then((result)=>console.log(result)).catch(()=>{
-        showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
-    }).finally(()=>{
-        showSpinnerAndDisableForm(false);
-    });
-}
-function saveCodeInCookiesAndGetUserName(event) {
-    event.preventDefault();
-    const token = event.target[0].value;
-    if (!token.length) return;
-    event.target.reset();
-    showSpinnerAndDisableForm(true);
-    const response = fetch("https://edu.strada.one/api/user/me", {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    response.then((answer)=>{
-        if (answer.ok) return answer.json();
-        return showNotification(ERROR.TYPE, ERROR.CODE_ERROR);
-    }).then((json)=>{
-        if (json) {
-            const { name , email , token: userToken  } = json;
-            userName = name;
-            (0, _jsCookieDefault.default).set("chat-name", name);
-            (0, _jsCookieDefault.default).set("chat-token", userToken);
-            (0, _jsCookieDefault.default).set("chat-email", email);
-            showNotification(NOTE.TYPE, NOTE.SUCCESS, name);
-            removePopup();
-            downloadMessagesFromTheServer();
-        }
-    }).catch((error)=>{
-        if (error.message === "Failed to fetch") showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
-        else showNotification(ERROR.TYPE, ERROR.OTHER_ERROR);
-    }).finally(()=>{
-        showSpinnerAndDisableForm(false);
-    });
-    console.log((0, _jsCookieDefault.default).get());
-}
-function changeUserName(event) {
-    event.preventDefault();
-    const newUserName = event.target[0].value;
-    if (!newUserName.length || newUserName === userName) return;
-    showSpinnerAndDisableForm(true);
-    const response = fetch("https://edu.strada.one/api/user", {
-        method: "PATCH",
-        headers: {
-            Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: newUserName
-        })
-    });
-    response.then((answer)=>{
-        if (answer.ok) return answer.json();
-        return showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
-    }).then(({ name  })=>{
-        showNotification(NOTE.TYPE, NOTE.CHANGE_USERNAME, name);
-        userName = name;
-        (0, _jsCookieDefault.default).set("chat-name", name);
-        console.log((0, _jsCookieDefault.default).get());
-    }).catch(()=>{
-        showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
-    }).finally(()=>{
-        showSpinnerAndDisableForm(false);
-        window.location.reload();
-    });
-}
-// ==================  Кнопка "Настройки"  ==================
-UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener("click", ()=>{
-    createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME);
-});
+if (theme) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", theme);
+if (theme === "dark") (0, _uiElements.UI_ELEMENTS).THEME_SWITCHER.checked = true;
+(0, _uiElements.UI_ELEMENTS).THEME_SWITCHER.addEventListener("change", (0, _handlers.changeTheme));
 // ==================  Загрузить сообщения с сервера (пагинация)  ==================
 let allMessages = [];
 const step = 20;
@@ -898,18 +600,17 @@ function renderMessages(type) {
             const allMessagesLoaded = document.createElement("div");
             allMessagesLoaded.classList.add("date");
             allMessagesLoaded.textContent = "Вся история загружена";
-            UI_ELEMENTS.MESSAGE_LIST.append(allMessagesLoaded);
-            UI_ELEMENTS.MESSAGE_LIST.removeEventListener("scroll", scrollMessagesList);
+            (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.append(allMessagesLoaded);
+            (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.removeEventListener("scroll", scrollMessagesList);
         } else {
             if (finish >= allMessages.length - step) finish = allMessages.length;
             else finish += step;
             start += step;
         }
     }
-    console.log(finish);
 }
 function downloadMessagesFromTheServer() {
-    showLoadingSpinnerForMessages(true);
+    (0, _handlers.showLoadingSpinnerForMessages)(true);
     const response = fetch("https://edu.strada.one/api/messages/", {
         method: "GET",
         headers: {
@@ -920,61 +621,27 @@ function downloadMessagesFromTheServer() {
         allMessages = messages.messages;
         renderMessages();
     }).catch(()=>{
-        showNotification(ERROR.TYPE, ERROR.SERVER_ERROR);
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     }).finally(()=>{
-        showLoadingSpinnerForMessages(false);
+        (0, _handlers.showLoadingSpinnerForMessages)(false);
     });
 }
 // ==================  Прокрутка вниз по кнопке  ==================
-UI_ELEMENTS.BUTTON_SCROLL.addEventListener("click", ()=>{
+(0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.addEventListener("click", ()=>{
     scrollToLastUserMessage();
 });
-UI_ELEMENTS.MESSAGE_LIST.addEventListener("scroll", showScrollButton);
+(0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.addEventListener("scroll", showScrollButton);
 function showScrollButton(event) {
-    if (event.target.scrollTop < -50) UI_ELEMENTS.BUTTON_SCROLL.classList.add("active");
-    else UI_ELEMENTS.BUTTON_SCROLL.classList.remove("active");
+    if (event.target.scrollTop < -50) (0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.classList.add("active");
+    else (0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.classList.remove("active");
 }
-UI_ELEMENTS.MESSAGE_LIST.addEventListener("scroll", scrollMessagesList);
+(0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.addEventListener("scroll", scrollMessagesList);
 function scrollMessagesList(event) {
     const elem = event.target;
     if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) renderMessages("messages");
 }
-// ==================  ВХОД  ==================
-// Cookies.remove('chat-name')
-// Cookies.remove('chat-token')
-// Cookies.remove('chat-email')
-if (!(0, _jsCookieDefault.default).get("chat-token")) createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME);
-else downloadMessagesFromTheServer();
-function connectionLight(action) {
-    if (action) UI_ELEMENTS.CONNECTION_LIGHT.classList.add("connect");
-    else UI_ELEMENTS.CONNECTION_LIGHT.classList.remove("connect");
-}
-const socket = new WebSocket(`wss://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
-socket.onopen = ()=>{
-    console.log("Соединение установлено");
-    connectionLight(true);
-};
-socket.onmessage = (event)=>{
-    const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);
-    addMessage(text, email, name, createdAt);
-    if (email === (0, _jsCookieDefault.default).get("chat-email") || UI_ELEMENTS.MESSAGE_LIST.scrollTop > -300) scrollToLastUserMessage();
-};
-socket.onclose = function(event) {
-    console.log("Соединение закрыто", event);
-    if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains("connect")) {
-        connectionLight(false);
-        window.location.reload();
-    }
-};
-UI_ELEMENTS.CONNECTION_LIGHT.addEventListener("click", ()=>{
-    if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains("connect")) {
-        UI_ELEMENTS.CONNECTION_LIGHT.classList.remove("connect");
-        socket.close(1000, "работа закончена");
-    } else window.location.reload();
-});
-// ================== функция Добавить НОВОЕ СООБЩЕНИЕ  ==================
 function addMessage(text, email, name, time, type) {
-    const message = UI_ELEMENTS.TEMPLATE_MESSAGE.content.cloneNode(true);
+    const message = (0, _uiElements.UI_ELEMENTS).TEMPLATE_MESSAGE.content.cloneNode(true);
     const userEmail = (0, _jsCookieDefault.default).get("chat-email");
     const messageUser = message.querySelector(".message__user");
     const messageText = message.querySelector(".message-text");
@@ -986,31 +653,18 @@ function addMessage(text, email, name, time, type) {
     }
     messageText.textContent = text;
     messageTime.textContent = (0, _dateFns.format)((0, _dateFns.parseISO)(time), "HH:mm");
-    if (type) UI_ELEMENTS.MESSAGE_LIST.append(message);
-    else UI_ELEMENTS.MESSAGE_LIST.prepend(message);
+    if (type) (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.append(message);
+    else (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.prepend(message);
 }
 function scrollToLastUserMessage() {
-    UI_ELEMENTS.MESSAGE_LIST.scrollTo({
+    (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTo({
         top: -1,
         left: 0,
         behavior: "smooth"
     });
 }
-UI_ELEMENTS.FORM_MESSAGE.addEventListener("submit", sendMessage);
-function sendMessage(event) {
-    event.preventDefault();
-    const userMessage = event.target[0].value.trim();
-    if (userMessage.length) {
-        socket.send(JSON.stringify({
-            text: userMessage
-        }));
-        event.target.reset();
-        (0, _jsCookieDefault.default).set("currentInputValue", "");
-        UI_ELEMENTS.FORM_TEXTAREA.style.height = "";
-    }
-}
-UI_ELEMENTS.FORM_TEXTAREA.addEventListener("input", (e)=>{
-    if (parseInt(getComputedStyle(e.target).height) < 100) e.target.style.height = `${e.target.scrollHeight + 2}px`;
+(0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.addEventListener("input", (e)=>{
+    if (parseInt(getComputedStyle(e.target).height, 10) < 100) e.target.style.height = `${e.target.scrollHeight + 2}px`;
 });
 function submitOnEnter(event) {
     if (event.code === "Enter" && !event.shiftKey) {
@@ -1019,13 +673,15 @@ function submitOnEnter(event) {
         event.preventDefault();
     }
 }
-UI_ELEMENTS.FORM_TEXTAREA.addEventListener("keydown", submitOnEnter);
-UI_ELEMENTS.FORM_TEXTAREA.addEventListener("input", (e)=>{
-    (0, _jsCookieDefault.default).set("currentInputValue", e.target.value);
+(0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.addEventListener("keydown", submitOnEnter);
+(0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.addEventListener("input", (e)=>{
+    (0, _jsCookieDefault.default).set("chat-currentInputValue", e.target.value, {
+        expires: 2
+    });
 });
-if ((0, _jsCookieDefault.default).get("currentInputValue")) UI_ELEMENTS.FORM_TEXTAREA.value = (0, _jsCookieDefault.default).get("currentInputValue");
+if ((0, _jsCookieDefault.default).get("currentInputValue")) (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.value = (0, _jsCookieDefault.default).get("chat-currentInputValue");
 
-},{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA"}],"c8bBu":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA","./ui-elements":"ghRIp","./handlers":"hCzvv","./popup":"jpJ9p","./socket":"duoz3"}],"c8bBu":[function(require,module,exports) {
 (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -4163,6 +3819,419 @@ var secondsInYear = secondsInDay * daysInYear;
 var secondsInMonth = secondsInYear / 12;
 var secondsInQuarter = secondsInMonth * 3;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ghRIp":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "UI_ELEMENTS", ()=>UI_ELEMENTS);
+parcelHelpers.export(exports, "ERROR", ()=>ERROR);
+parcelHelpers.export(exports, "NOTE", ()=>NOTE);
+parcelHelpers.export(exports, "TYPE_MODAL_WINDOW", ()=>TYPE_MODAL_WINDOW);
+const UI_ELEMENTS = {
+    BODY: document.querySelector("body"),
+    CONTAINER: document.querySelector(".container"),
+    BUTTONS: {
+        SETTINGS: document.querySelector(".settings")
+    },
+    THEME_SWITCHER: document.querySelector(".theme-switcher input"),
+    CONNECTION_LIGHT: document.querySelector(".connection"),
+    MESSAGE_LIST: document.querySelector("main"),
+    TEMPLATE_MESSAGE: document.querySelector("#templateMessage"),
+    FORM_MESSAGE: document.querySelector(".send-message"),
+    FORM_TEXTAREA: document.querySelector(".textarea-message"),
+    BUTTON_SCROLL: document.querySelector(".scroll"),
+    MODAL_WINDOW: {
+        WINDOW: document.querySelector(".popup"),
+        CONTAINER: document.querySelector(".popup-container"),
+        TITLE: document.querySelector(".title__text"),
+        CONTENT: document.querySelector(".popup-content"),
+        CONTENT_TITLE: document.querySelector(".popup-title"),
+        CONTENT_FORM: document.querySelector(".content-form"),
+        CONTENT_INPUT: document.querySelector(".content-input"),
+        CONTENT_BUTTON: document.querySelector(".content-btn"),
+        CLOSE_WINDOW: document.querySelector(".title__close"),
+        CLOSE_SVG: document.querySelector(".close-svg"),
+        SPINNER: document.querySelector(".spinner")
+    }
+};
+const ERROR = {
+    TYPE: "error",
+    SERVER_ERROR: "Ошибка при запросе на сервер. Попробуйте позже..",
+    EMAIL_ERROR: "Неправильный адрес почты. Попробуйте еще раз..",
+    CODE_ERROR: "Неправильный КОД. Введите еще раз..",
+    OTHER_ERROR: "Ошибка. Попробуйте зайти позже.."
+};
+const NOTE = {
+    TYPE: "notification",
+    SEND_EMAIL: "Письмо с кодом успешно отправлено. Проверьте почтовый ящик..",
+    SUCCESS: "Отлично! Сейчас ваше имя в чате: ",
+    CHANGE_USERNAME: "Отлично! Вы поменяли имя на: "
+};
+const TYPE_MODAL_WINDOW = {
+    LOGIN: {
+        NAME: "LOGIN",
+        TITLE: "Авторизация",
+        CONTENT_TITLE: "Почта:",
+        BUTTON_GO: "Получить код",
+        LINK_CODE: "Уже есть код?",
+        INPUT_TYPE: "email",
+        PLACEHOLDER: "Введите адрес почты.."
+    },
+    CODE: {
+        NAME: "CODE",
+        TITLE: "Подтверждение",
+        CONTENT_TITLE: "Код:",
+        BUTTON_GO: "Войти",
+        LINK_CODE: "Не пришло письмо с кодом?",
+        INPUT_TYPE: "text",
+        PLACEHOLDER: "Введите код из письма.."
+    },
+    SETTINGS: {
+        NAME: "SETTINGS",
+        TITLE: "Настройки",
+        CONTENT_TITLE: "Имя в чате:",
+        BUTTON_GO: "Изменить",
+        INPUT_TYPE: "text",
+        PLACEHOLDER: "ваше имя в чате.."
+    }
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
+parcelHelpers.export(exports, "showNotification", ()=>showNotification);
+parcelHelpers.export(exports, "changeTheme", ()=>changeTheme);
+// ==================  ПОКАЗ ЗАГРУЗКИ и ОТКЛЮЧЕНИЕ ФОРМЫ   ==================
+parcelHelpers.export(exports, "createLoadingSpinner", ()=>createLoadingSpinner);
+parcelHelpers.export(exports, "showLoadingSpinnerForMessages", ()=>showLoadingSpinnerForMessages);
+parcelHelpers.export(exports, "showSpinnerAndDisableForm", ()=>showSpinnerAndDisableForm);
+var _uiElements = require("./ui-elements");
+function showNotification(type, noteMessage, name = "") {
+    const noteBlock = document.createElement("div");
+    noteBlock.textContent = noteMessage + name;
+    if (type === (0, _uiElements.ERROR).TYPE) noteBlock.classList.add("error-container");
+    if (type === (0, _uiElements.NOTE).TYPE) noteBlock.classList.add("note-container");
+    noteBlock.addEventListener("click", ()=>noteBlock.remove());
+    (0, _uiElements.UI_ELEMENTS).BODY.append(noteBlock);
+    setTimeout(()=>{
+        noteBlock.classList.add("active");
+        setTimeout(()=>{
+            noteBlock.classList.remove("active");
+            setTimeout(()=>{
+                noteBlock.remove();
+            }, 1000);
+        }, 5000);
+    }, 100);
+}
+function changeTheme(event) {
+    if (event.target.checked) {
+        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "dark");
+        localStorage.setItem("theme", JSON.stringify("dark"));
+    } else {
+        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "light");
+        localStorage.setItem("theme", JSON.stringify("light"));
+    }
+}
+function createLoadingSpinner() {
+    const spinner = document.createElement("img");
+    spinner.classList.add("spinner") //
+    ;
+    spinner.src = "spinner.267ff859.svg" //
+    ;
+    spinner.alt = "spinner";
+    return spinner;
+}
+function showLoadingSpinnerForMessages(active) {
+    const spinner = document.querySelector(".spinner-messages");
+    if (active) spinner.classList.add("active");
+    else spinner.classList.remove("active");
+}
+function showSpinnerAndDisableForm(active) {
+    const spinner = document.querySelector(".spinner");
+    const linkToCode = document.querySelector(".link-code");
+    const input = document.querySelector(".content-input");
+    const button = document.querySelector(".content-btn");
+    if (input) input.disabled = active;
+    if (button) button.disabled = active;
+    if (spinner) {
+        if (active) spinner.classList.add("active");
+        else spinner.classList.remove("active");
+    }
+    if (linkToCode) {
+        if (active) linkToCode.classList.add("disabled");
+        else linkToCode.classList.remove("disabled");
+    }
+}
+
+},{"./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jpJ9p":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+// ==================  Закрываем модальное окно  ==================
+parcelHelpers.export(exports, "removePopup", ()=>removePopup);
+parcelHelpers.export(exports, "closePopupByClickOnEmptySpace", ()=>closePopupByClickOnEmptySpace);
+parcelHelpers.export(exports, "closePopupByPressOnEscape", ()=>closePopupByPressOnEscape);
+// ==================  Создаем модальное окно  ==================
+parcelHelpers.export(exports, "createPopup", ()=>createPopup);
+var _jsCookie = require("js-cookie");
+var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
+var _uiElements = require("./ui-elements");
+var _handlers = require("./handlers");
+var _socket = require("./socket");
+var _index = require("./index");
+let userName = (0, _jsCookieDefault.default).get("chat-name") || "";
+// ==================  Кнопка "Настройки"  ==================
+(0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS.addEventListener("click", ()=>{
+    createPopup((0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME);
+});
+function removePopup() {
+    document.querySelector(".popup").remove();
+    console.log((0, _jsCookieDefault.default).get());
+}
+function closePopupByClickOnEmptySpace(event) {
+    if (event.target.classList.contains("popup")) removePopup();
+}
+function closePopupByPressOnEscape(event) {
+    if (event.code === "Escape") removePopup();
+}
+function createPopup(type) {
+    const popup = document.createElement("div");
+    popup.classList.add("popup", "active") //
+    ;
+    if (type === (0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME) {
+        popup.addEventListener("mousedown", closePopupByClickOnEmptySpace, {
+            once: true
+        });
+        popup.addEventListener("keydown", closePopupByPressOnEscape, {
+            once: true
+        });
+    }
+    const popupContainer = document.createElement("div");
+    popupContainer.classList.add("popup-container");
+    const popupTitle = document.createElement("div");
+    popupTitle.classList.add("popup-title");
+    const titleText = document.createElement("div");
+    titleText.classList.add("title__text");
+    titleText.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].TITLE;
+    const popupContent = document.createElement("div");
+    popupContent.classList.add("popup-content", "login-code") //
+    ;
+    const contentTitle = document.createElement("div");
+    contentTitle.classList.add("content-title");
+    contentTitle.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].CONTENT_TITLE;
+    const contentForm = document.createElement("form");
+    contentForm.classList.add("content-form");
+    const contentInput = document.createElement("input");
+    contentInput.classList.add("content-input");
+    contentInput.type = (0, _uiElements.TYPE_MODAL_WINDOW)[type].INPUT_TYPE;
+    contentInput.placeholder = (0, _uiElements.TYPE_MODAL_WINDOW)[type].PLACEHOLDER;
+    if (!(0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME) contentInput.autofocus = true;
+    switch(type){
+        case (0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME:
+            contentForm.addEventListener("submit", userIndentification);
+            break;
+        case (0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME:
+            contentForm.addEventListener("submit", userAuthentification);
+            break;
+        case (0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME:
+            contentInput.value = userName;
+            contentForm.addEventListener("submit", changeUserName);
+            break;
+        default:
+            break;
+    }
+    const contentButton = document.createElement("button");
+    contentButton.classList.add("content-btn");
+    contentButton.type = "submit";
+    contentButton.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].BUTTON_GO;
+    const spinner = (0, _handlers.createLoadingSpinner)();
+    let linkToCode = new DocumentFragment();
+    function openOtherPopup() {
+        removePopup();
+        if (type === (0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME) createPopup((0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME);
+        if (type === (0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME) createPopup((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
+    }
+    if (type !== (0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME) {
+        linkToCode = document.createElement("a");
+        linkToCode.classList.add("link-code");
+        linkToCode.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].LINK_CODE;
+        linkToCode.addEventListener("click", openOtherPopup, {
+            once: true
+        });
+    }
+    let titleClose = new DocumentFragment();
+    if (type === (0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME) {
+        titleClose = document.createElement("div");
+        titleClose.classList.add("title__close");
+        titleClose.innerHTML = "&#9587";
+        titleClose.addEventListener("click", ()=>removePopup(), {
+            once: true
+        });
+    }
+    popupTitle.append(titleText, titleClose);
+    contentForm.append(contentInput, contentButton, linkToCode, spinner);
+    popupContent.append(contentTitle, contentForm);
+    popupContainer.append(popupTitle, popupContent);
+    popup.append(popupContainer);
+    (0, _uiElements.UI_ELEMENTS).BODY.append(popup);
+    console.log((0, _jsCookieDefault.default).get());
+}
+// ==================  Функции на кнопках модального окна ==================
+function userIndentification(event) {
+    event.preventDefault();
+    const userEmail = event.target[0].value;
+    if (!userEmail.length) return;
+    event.target.reset();
+    (0, _handlers.showSpinnerAndDisableForm)(true);
+    const response = fetch("https://edu.strada.one/api/user", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email: userEmail
+        })
+    });
+    response.then((answer)=>{
+        if (answer.ok) {
+            (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SEND_EMAIL);
+            removePopup();
+            createPopup((0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME);
+            return answer.json();
+        }
+        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).EMAIL_ERROR);
+    }).then((result)=>console.log(result)).catch(()=>{
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+    }).finally(()=>{
+        (0, _handlers.showSpinnerAndDisableForm)(false);
+    });
+}
+function userAuthentification(event) {
+    event.preventDefault();
+    const token = event.target[0].value;
+    if (!token.length) return;
+    event.target.reset();
+    (0, _handlers.showSpinnerAndDisableForm)(true);
+    const response = fetch("https://edu.strada.one/api/user/me", {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    response.then((answer)=>{
+        if (answer.ok) return answer.json();
+        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).CODE_ERROR);
+    }).then((json)=>{
+        if (json) {
+            const { name , email , token: userToken  } = json;
+            userName = name;
+            (0, _jsCookieDefault.default).set("chat-name", name, {
+                expires: 2
+            });
+            (0, _jsCookieDefault.default).set("chat-token", userToken, {
+                expires: 2
+            });
+            (0, _jsCookieDefault.default).set("chat-email", email, {
+                expires: 2
+            });
+            (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SUCCESS, name);
+            removePopup();
+            (0, _index.downloadMessagesFromTheServer)();
+            (0, _socket.socketConnection)();
+        }
+    }).catch((error)=>{
+        if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+        else (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).OTHER_ERROR);
+    }).finally(()=>{
+        (0, _handlers.showSpinnerAndDisableForm)(false);
+    });
+    console.log((0, _jsCookieDefault.default).get());
+}
+function changeUserName(event) {
+    event.preventDefault();
+    const newUserName = event.target[0].value;
+    if (!newUserName.length || newUserName === userName) return;
+    (0, _handlers.showSpinnerAndDisableForm)(true);
+    const response = fetch("https://edu.strada.one/api/user", {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: newUserName
+        })
+    });
+    response.then((answer)=>{
+        if (answer.ok) return answer.json();
+        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+    }).then(({ name  })=>{
+        (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).CHANGE_USERNAME, name);
+        userName = name;
+        (0, _jsCookieDefault.default).set("chat-name", name, {
+            expires: 2
+        });
+        console.log((0, _jsCookieDefault.default).get());
+    }).catch(()=>{
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+    }).finally(()=>{
+        (0, _handlers.showSpinnerAndDisableForm)(false);
+        window.location.reload();
+    });
+}
+
+},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./socket":"duoz3","./index":"bB7Pu"}],"duoz3":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _jsCookie = require("js-cookie");
+var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
+var _index = require("./index");
+var _uiElements = require("./ui-elements");
+function connectionLight(action) {
+    if (action) (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.add("connect");
+    else (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
+}
+function socketConnection() {
+    const socket = new WebSocket(`wss://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
+    socket.onopen = ()=>{
+        console.log("Соединение установлено");
+        connectionLight(true);
+    };
+    socket.onmessage = (event)=>{
+        const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);
+        (0, _index.addMessage)(text, email, name, createdAt);
+        if (email === (0, _jsCookieDefault.default).get("chat-email") || (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTop > -300) (0, _index.scrollToLastUserMessage)();
+    };
+    socket.onclose = (event)=>{
+        console.log("Соединение закрыто", event);
+        if ((0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.contains("connect")) {
+            connectionLight(false);
+            window.location.reload();
+        }
+    };
+    (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.addEventListener("click", ()=>{
+        if ((0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.contains("connect")) {
+            (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
+            socket.close(1000, "работа закончена");
+        } else window.location.reload();
+    });
+    function sendMessage(event) {
+        event.preventDefault();
+        const userMessage = event.target[0].value.trim();
+        if (userMessage.length) {
+            socket.send(JSON.stringify({
+                text: userMessage
+            }));
+            event.target.reset();
+            (0, _jsCookieDefault.default).set("chat-currentInputValue", "", {
+                expires: 2
+            });
+            (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.style.height = "";
+        }
+    }
+    (0, _uiElements.UI_ELEMENTS).FORM_MESSAGE.addEventListener("submit", sendMessage);
+}
+exports.default = socketConnection;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
 
 //# sourceMappingURL=index.3d214d75.js.map
