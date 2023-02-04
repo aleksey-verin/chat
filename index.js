@@ -12,17 +12,17 @@ import socketConnection from './socket'
 
 // ==================  ВХОД  ==================
 
-// Cookies.remove('chat-name')
-// Cookies.remove('chat-token')
-// Cookies.remove('chat-email')
-// Cookies.remove('currentInputValue')
+Cookies.remove('chat-name')
+Cookies.remove('chat-token')
+Cookies.remove('chat-email')
+Cookies.remove('currentInputValue')
 
 if (!Cookies.get('chat-token')) {
   createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME)
 } else {
   downloadMessagesFromTheServer()
-  socketConnection()
 }
+socketConnection()
 
 // ==================  Темы: светлая / темная  ==================
 
@@ -169,6 +169,6 @@ UI_ELEMENTS.FORM_TEXTAREA.addEventListener('input', (e) => {
   Cookies.set('chat-currentInputValue', e.target.value, { expires: 2 })
 })
 
-if (Cookies.get('currentInputValue')) {
+if (Cookies.get('chat-currentInputValue')) {
   UI_ELEMENTS.FORM_TEXTAREA.value = Cookies.get('chat-currentInputValue')
 }

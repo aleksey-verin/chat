@@ -33,7 +33,7 @@ function socketConnection() {
     }
   }
 
-  socket.onclose = (event) => {
+  socket.onclose = () => {
     if (UI_ELEMENTS.CONNECTION_LIGHT.classList.contains('connect')) {
       connectionLight(false)
       window.location.reload()

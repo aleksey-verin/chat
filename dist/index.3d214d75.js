@@ -572,15 +572,13 @@ var _handlers = require("./handlers");
 var _socket = require("./socket");
 var _socketDefault = parcelHelpers.interopDefault(_socket);
 // ==================  ВХОД  ==================
-// Cookies.remove('chat-name')
-// Cookies.remove('chat-token')
-// Cookies.remove('chat-email')
-// Cookies.remove('currentInputValue')
+(0, _jsCookieDefault.default).remove("chat-name");
+(0, _jsCookieDefault.default).remove("chat-token");
+(0, _jsCookieDefault.default).remove("chat-email");
+(0, _jsCookieDefault.default).remove("currentInputValue");
 if (!(0, _jsCookieDefault.default).get("chat-token")) (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
-else {
-    downloadMessagesFromTheServer();
-    (0, _socketDefault.default)();
-}
+else downloadMessagesFromTheServer();
+(0, _socketDefault.default)();
 // ==================  Темы: светлая / темная  ==================
 const theme = JSON.parse(localStorage.getItem("theme"));
 if (theme) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", theme);
@@ -679,7 +677,7 @@ function submitOnEnter(event) {
         expires: 2
     });
 });
-if ((0, _jsCookieDefault.default).get("currentInputValue")) (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.value = (0, _jsCookieDefault.default).get("chat-currentInputValue");
+if ((0, _jsCookieDefault.default).get("chat-currentInputValue")) (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.value = (0, _jsCookieDefault.default).get("chat-currentInputValue");
 
 },{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA","./ui-elements":"ghRIp","./popup":"jpJ9p","./handlers":"hCzvv","./socket":"duoz3"}],"c8bBu":[function(require,module,exports) {
 (function(global, factory) {
@@ -4070,7 +4068,6 @@ function userAuthentification(event) {
         }
     }).catch((error)=>{
         if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-        else (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).OTHER_ERROR);
     }).finally(()=>{
         (0, _handlers.showSpinnerAndDisableForm)(false);
     });
@@ -4196,7 +4193,7 @@ function socketConnection() {
         (0, _index.addMessage)(text, email, name, createdAt);
         if (email === (0, _jsCookieDefault.default).get("chat-email") || (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTop > -300) (0, _index.scrollToLastUserMessage)();
     };
-    socket.onclose = (event)=>{
+    socket.onclose = ()=>{
         if ((0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.contains("connect")) {
             connectionLight(false);
             window.location.reload();

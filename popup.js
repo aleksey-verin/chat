@@ -211,8 +211,6 @@ function userAuthentification(event) {
     .catch((error) => {
       if (error.message === 'Failed to fetch') {
         showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
-      } else {
-        showNotification(ERROR.TYPE, ERROR.OTHER_ERROR)
       }
     })
     .finally(() => {
