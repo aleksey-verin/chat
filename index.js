@@ -12,10 +12,10 @@ import socketConnection from './socket'
 
 // ==================  ВХОД  ==================
 
-Cookies.remove('chat-name')
-Cookies.remove('chat-token')
-Cookies.remove('chat-email')
-Cookies.remove('currentInputValue')
+// Cookies.remove('chat-name')
+// Cookies.remove('chat-token')
+// Cookies.remove('chat-email')
+// Cookies.remove('currentInputValue')
 
 if (!Cookies.get('chat-token')) {
   createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME)

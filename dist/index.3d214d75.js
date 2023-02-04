@@ -572,10 +572,10 @@ var _handlers = require("./handlers");
 var _socket = require("./socket");
 var _socketDefault = parcelHelpers.interopDefault(_socket);
 // ==================  ВХОД  ==================
-(0, _jsCookieDefault.default).remove("chat-name");
-(0, _jsCookieDefault.default).remove("chat-token");
-(0, _jsCookieDefault.default).remove("chat-email");
-(0, _jsCookieDefault.default).remove("currentInputValue");
+// Cookies.remove('chat-name')
+// Cookies.remove('chat-token')
+// Cookies.remove('chat-email')
+// Cookies.remove('currentInputValue')
 if (!(0, _jsCookieDefault.default).get("chat-token")) (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
 else downloadMessagesFromTheServer();
 (0, _socketDefault.default)();
