@@ -5,7 +5,7 @@ import {
   showSpinnerAndDisableForm,
   showNotification,
 } from './handlers'
-import { socketConnection } from './socket'
+// import { socketConnection } from './socket'
 import { downloadMessagesFromTheServer } from './index'
 
 let userName = Cookies.get('chat-name') || ''
@@ -198,16 +198,22 @@ function userAuthentification(event) {
     .then((json) => {
       if (json) {
         const { name, email, token: userToken } = json
+        console.log(userToken)
         userName = name
         Cookies.set('chat-name', name, { expires: 2 })
         Cookies.set('chat-token', userToken, { expires: 2 })
         Cookies.set('chat-email', email, { expires: 2 })
+        console.log(Cookies.get('chat-token'))
         showNotification(NOTE.TYPE, NOTE.SUCCESS, name)
         removePopup()
         downloadMessagesFromTheServer()
-        socketConnection()
+        // socketConnection(userToken)
       }
     })
+    // .then(() => {
+    //   console.log('перед сокетом')
+    //   console.log('после сокета')
+    // })
     .catch((error) => {
       if (error.message === 'Failed to fetch') {
         showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)

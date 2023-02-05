@@ -20,9 +20,13 @@ import socketConnection from './socket'
 if (!Cookies.get('chat-token')) {
   createPopup(TYPE_MODAL_WINDOW.LOGIN.NAME)
 } else {
-  downloadMessagesFromTheServer()
+  downloadMessagesFromTheServer() /// =========================== разобраться или переделать
+  // socketConnection(Cookies.get('chat-token'))
 }
-socketConnection()
+// if (Cookies.get('chat-token')) {
+// }
+
+// document.querySelector('.exit').addEventListener('click', handleSound)
 
 // ==================  Темы: светлая / темная  ==================
 
@@ -44,17 +48,6 @@ let start = 0
 let finish = start + step
 
 function renderMessages(type) {
-  if (finish !== allMessages.length) {
-    allMessages.slice(start, finish).forEach((item) => {
-      addMessage(
-        item.text,
-        item.user.email,
-        item.user.name,
-        item.createdAt,
-        'messages'
-      )
-    })
-  }
   if (type) {
     if (finish === allMessages.length) {
       const allMessagesLoaded = document.createElement('div')
@@ -71,9 +64,22 @@ function renderMessages(type) {
       start += step
     }
   }
+  if (finish !== allMessages.length) {
+    allMessages.slice(start, finish).forEach((item) => {
+      addMessage(
+        item.text,
+        item.user.email,
+        item.user.name,
+        item.createdAt,
+        'messages'
+      )
+    })
+  }
 }
 
 export function downloadMessagesFromTheServer() {
+  socketConnection(Cookies.get('chat-token'))
+
   showLoadingSpinnerForMessages(true)
   const response = fetch('https://edu.strada.one/api/messages/', {
     method: 'GET',
@@ -95,6 +101,17 @@ export function downloadMessagesFromTheServer() {
     })
 }
 
+UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', scrollMessagesList)
+function scrollMessagesList(event) {
+  const elem = event.target
+  if (
+    elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 &&
+    elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2
+  ) {
+    renderMessages('messages')
+  }
+}
+
 // ==================  Прокрутка вниз по кнопке  ==================
 
 UI_ELEMENTS.BUTTON_SCROLL.addEventListener('click', () => {
@@ -107,17 +124,6 @@ function showScrollButton(event) {
     UI_ELEMENTS.BUTTON_SCROLL.classList.add('active')
   } else {
     UI_ELEMENTS.BUTTON_SCROLL.classList.remove('active')
-  }
-}
-
-UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', scrollMessagesList)
-function scrollMessagesList(event) {
-  const elem = event.target
-  if (
-    elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 &&
-    elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2
-  ) {
-    renderMessages('messages')
   }
 }
 

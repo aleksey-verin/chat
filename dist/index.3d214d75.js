@@ -577,8 +577,11 @@ var _socketDefault = parcelHelpers.interopDefault(_socket);
 // Cookies.remove('chat-email')
 // Cookies.remove('currentInputValue')
 if (!(0, _jsCookieDefault.default).get("chat-token")) (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
-else downloadMessagesFromTheServer();
-(0, _socketDefault.default)();
+else downloadMessagesFromTheServer() /// =========================== разобраться или переделать
+;
+// if (Cookies.get('chat-token')) {
+// }
+// document.querySelector('.exit').addEventListener('click', handleSound)
 // ==================  Темы: светлая / темная  ==================
 const theme = JSON.parse(localStorage.getItem("theme"));
 if (theme) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", theme);
@@ -590,9 +593,6 @@ const step = 20;
 let start = 0;
 let finish = start + step;
 function renderMessages(type) {
-    if (finish !== allMessages.length) allMessages.slice(start, finish).forEach((item)=>{
-        addMessage(item.text, item.user.email, item.user.name, item.createdAt, "messages");
-    });
     if (type) {
         if (finish === allMessages.length) {
             const allMessagesLoaded = document.createElement("div");
@@ -606,8 +606,12 @@ function renderMessages(type) {
             start += step;
         }
     }
+    if (finish !== allMessages.length) allMessages.slice(start, finish).forEach((item)=>{
+        addMessage(item.text, item.user.email, item.user.name, item.createdAt, "messages");
+    });
 }
 function downloadMessagesFromTheServer() {
+    (0, _socketDefault.default)((0, _jsCookieDefault.default).get("chat-token"));
     (0, _handlers.showLoadingSpinnerForMessages)(true);
     const response = fetch("https://edu.strada.one/api/messages/", {
         method: "GET",
@@ -624,6 +628,11 @@ function downloadMessagesFromTheServer() {
         (0, _handlers.showLoadingSpinnerForMessages)(false);
     });
 }
+(0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.addEventListener("scroll", scrollMessagesList);
+function scrollMessagesList(event) {
+    const elem = event.target;
+    if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) renderMessages("messages");
+}
 // ==================  Прокрутка вниз по кнопке  ==================
 (0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.addEventListener("click", ()=>{
     scrollToLastUserMessage();
@@ -632,11 +641,6 @@ function downloadMessagesFromTheServer() {
 function showScrollButton(event) {
     if (event.target.scrollTop < -50) (0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.classList.add("active");
     else (0, _uiElements.UI_ELEMENTS).BUTTON_SCROLL.classList.remove("active");
-}
-(0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.addEventListener("scroll", scrollMessagesList);
-function scrollMessagesList(event) {
-    const elem = event.target;
-    if (elem.scrollTop <= elem.clientHeight - elem.scrollHeight + 2 && elem.scrollTop >= elem.clientHeight - elem.scrollHeight - 2) renderMessages("messages");
 }
 function addMessage(text, email, name, time, type) {
     const message = (0, _uiElements.UI_ELEMENTS).TEMPLATE_MESSAGE.content.cloneNode(true);
@@ -3906,7 +3910,7 @@ var _jsCookie = require("js-cookie");
 var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
 var _uiElements = require("./ui-elements");
 var _handlers = require("./handlers");
-var _socket = require("./socket");
+// import { socketConnection } from './socket'
 var _index = require("./index");
 let userName = (0, _jsCookieDefault.default).get("chat-name") || "";
 // ==================  Кнопка "Настройки"  ==================
@@ -4051,6 +4055,7 @@ function userAuthentification(event) {
     }).then((json)=>{
         if (json) {
             const { name , email , token: userToken  } = json;
+            console.log(userToken);
             userName = name;
             (0, _jsCookieDefault.default).set("chat-name", name, {
                 expires: 2
@@ -4061,12 +4066,17 @@ function userAuthentification(event) {
             (0, _jsCookieDefault.default).set("chat-email", email, {
                 expires: 2
             });
+            console.log((0, _jsCookieDefault.default).get("chat-token"));
             (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SUCCESS, name);
             removePopup();
             (0, _index.downloadMessagesFromTheServer)();
-            (0, _socket.socketConnection)();
+        // socketConnection(userToken)
         }
-    }).catch((error)=>{
+    })// .then(() => {
+    //   console.log('перед сокетом')
+    //   console.log('после сокета')
+    // })
+    .catch((error)=>{
         if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     }).finally(()=>{
         (0, _handlers.showSpinnerAndDisableForm)(false);
@@ -4104,7 +4114,7 @@ function changeUserName(event) {
     });
 }
 
-},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","./socket":"duoz3","./index":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","./index":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
@@ -4179,18 +4189,22 @@ var _jsCookie = require("js-cookie");
 var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
 var _index = require("./index");
 var _uiElements = require("./ui-elements");
+var _sounds = require("./sounds");
 function connectionLight(action) {
     if (action) (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.add("connect");
     else (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
 }
-function socketConnection() {
-    const socket = new WebSocket(`wss://edu.strada.one/websockets?${(0, _jsCookieDefault.default).get("chat-token")}`);
+async function socketConnection(token) {
+    // console.log('внутри сокета')
+    if (!token) return;
+    const socket = new WebSocket(`wss://edu.strada.one/websockets?${token}`);
     socket.onopen = ()=>{
         connectionLight(true);
     };
     socket.onmessage = (event)=>{
         const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);
         (0, _index.addMessage)(text, email, name, createdAt);
+        if (email !== (0, _jsCookieDefault.default).get("chat-email")) (0, _sounds.playOutcomeMessage)();
         if (email === (0, _jsCookieDefault.default).get("chat-email") || (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTop > -300) (0, _index.scrollToLastUserMessage)();
     };
     socket.onclose = ()=>{
@@ -4223,6 +4237,62 @@ function socketConnection() {
 }
 exports.default = socketConnection;
 
-},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
+},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./sounds":"bN2xy"}],"bN2xy":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "playIncomeMessage", ()=>playIncomeMessage);
+parcelHelpers.export(exports, "playOutcomeMessage", ()=>playOutcomeMessage);
+const playIncomeMessage = ()=>{
+    const audioUrl = require("2a19aa4991cb3ec2");
+    const sound = new Audio(audioUrl);
+    sound.play();
+};
+const playOutcomeMessage = ()=>{
+    const audioUrl = require("424efc7d47bc787c");
+    const sound = new Audio(audioUrl);
+    sound.play();
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","2a19aa4991cb3ec2":"6AiN0","424efc7d47bc787c":"gFoxr"}],"6AiN0":[function(require,module,exports) {
+module.exports = require("a02f5459162e8754").getBundleURL("UckoE") + "incomeMessage.b3b9f991.mp3" + "?" + Date.now();
+
+},{"a02f5459162e8754":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"gFoxr":[function(require,module,exports) {
+module.exports = require("38283898eecfad03").getBundleURL("UckoE") + "outcomeMessage.1ac630ea.mp3" + "?" + Date.now();
+
+},{"38283898eecfad03":"lgJ39"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
 
 //# sourceMappingURL=index.3d214d75.js.map
