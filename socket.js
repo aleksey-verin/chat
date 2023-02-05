@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie'
 import { addMessage, scrollToLastUserMessage } from './index'
 import { UI_ELEMENTS } from './ui-elements'
-import { playIncomeMessage, playOutcomeMessage } from './sounds'
+// import { playIncomeMessage, playOutcomeMessage } from './sounds'
 
 function connectionLight(action) {
   if (action) {
@@ -31,7 +31,9 @@ async function socketConnection(token) {
     addMessage(text, email, name, createdAt)
 
     if (email !== Cookies.get('chat-email')) {
-      playOutcomeMessage()
+      // playOutcomeMessage()
+      UI_ELEMENTS.AUDIO_INCOME_MESSAGE.muted = false
+      UI_ELEMENTS.AUDIO_INCOME_MESSAGE.play()
     }
 
     if (

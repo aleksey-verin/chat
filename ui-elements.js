@@ -25,6 +25,7 @@ export const UI_ELEMENTS = {
     CLOSE_SVG: document.querySelector('.close-svg'),
     SPINNER: document.querySelector('.spinner'),
   },
+  AUDIO_INCOME_MESSAGE: document.querySelector('#notification'),
 }
 export const ERROR = {
   TYPE: 'error',

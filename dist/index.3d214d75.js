@@ -3854,7 +3854,8 @@ const UI_ELEMENTS = {
         CLOSE_WINDOW: document.querySelector(".title__close"),
         CLOSE_SVG: document.querySelector(".close-svg"),
         SPINNER: document.querySelector(".spinner")
-    }
+    },
+    AUDIO_INCOME_MESSAGE: document.querySelector("#notification")
 };
 const ERROR = {
     TYPE: "error",
@@ -4190,7 +4191,7 @@ var _jsCookie = require("js-cookie");
 var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
 var _index = require("./index");
 var _uiElements = require("./ui-elements");
-var _sounds = require("./sounds");
+// import { playIncomeMessage, playOutcomeMessage } from './sounds'
 function connectionLight(action) {
     if (action) (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.add("connect");
     else (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
@@ -4205,7 +4206,11 @@ async function socketConnection(token) {
     socket.onmessage = (event)=>{
         const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);
         (0, _index.addMessage)(text, email, name, createdAt);
-        if (email !== (0, _jsCookieDefault.default).get("chat-email")) (0, _sounds.playOutcomeMessage)();
+        if (email !== (0, _jsCookieDefault.default).get("chat-email")) {
+            // playOutcomeMessage()
+            (0, _uiElements.UI_ELEMENTS).AUDIO_INCOME_MESSAGE.muted = false;
+            (0, _uiElements.UI_ELEMENTS).AUDIO_INCOME_MESSAGE.play();
+        }
         if (email === (0, _jsCookieDefault.default).get("chat-email") || (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTop > -300) (0, _index.scrollToLastUserMessage)();
     };
     socket.onclose = ()=>{
@@ -4247,62 +4252,6 @@ async function socketConnection(token) {
 }
 exports.default = socketConnection;
 
-},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","./sounds":"bN2xy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bN2xy":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "playIncomeMessage", ()=>playIncomeMessage);
-parcelHelpers.export(exports, "playOutcomeMessage", ()=>playOutcomeMessage);
-const playIncomeMessage = ()=>{
-    const audioUrl = require("2a19aa4991cb3ec2");
-    const sound = new Audio(audioUrl);
-    sound.play();
-};
-const playOutcomeMessage = ()=>{
-    const audioUrl = require("424efc7d47bc787c");
-    const sound = new Audio(audioUrl);
-    sound.play();
-};
-
-},{"2a19aa4991cb3ec2":"6AiN0","424efc7d47bc787c":"gFoxr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6AiN0":[function(require,module,exports) {
-module.exports = require("a02f5459162e8754").getBundleURL("UckoE") + "incomeMessage.b3b9f991.mp3" + "?" + Date.now();
-
-},{"a02f5459162e8754":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-} // TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"gFoxr":[function(require,module,exports) {
-module.exports = require("38283898eecfad03").getBundleURL("UckoE") + "outcomeMessage.1ac630ea.mp3" + "?" + Date.now();
-
-},{"38283898eecfad03":"lgJ39"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
+},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
 
 //# sourceMappingURL=index.3d214d75.js.map
