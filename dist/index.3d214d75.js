@@ -3836,6 +3836,7 @@ const UI_ELEMENTS = {
     },
     THEME_SWITCHER: document.querySelector(".theme-switcher input"),
     CONNECTION_LIGHT: document.querySelector(".connection"),
+    BUTTON_EXIT: document.querySelector(".exit"),
     MESSAGE_LIST: document.querySelector("main"),
     TEMPLATE_MESSAGE: document.querySelector("#templateMessage"),
     FORM_MESSAGE: document.querySelector(".send-message"),
@@ -4234,10 +4235,19 @@ async function socketConnection(token) {
         }
     }
     (0, _uiElements.UI_ELEMENTS).FORM_MESSAGE.addEventListener("submit", sendMessage);
+    function loginOut() {
+        socket.close(1000, "работа закончена");
+        (0, _jsCookieDefault.default).remove("chat-name");
+        (0, _jsCookieDefault.default).remove("chat-token");
+        (0, _jsCookieDefault.default).remove("chat-email");
+        (0, _jsCookieDefault.default).remove("currentInputValue");
+        window.location.reload();
+    }
+    (0, _uiElements.UI_ELEMENTS).BUTTON_EXIT.addEventListener("click", loginOut);
 }
 exports.default = socketConnection;
 
-},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./sounds":"bN2xy"}],"bN2xy":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","./sounds":"bN2xy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bN2xy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "playIncomeMessage", ()=>playIncomeMessage);
@@ -4253,7 +4263,7 @@ const playOutcomeMessage = ()=>{
     sound.play();
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","2a19aa4991cb3ec2":"6AiN0","424efc7d47bc787c":"gFoxr"}],"6AiN0":[function(require,module,exports) {
+},{"2a19aa4991cb3ec2":"6AiN0","424efc7d47bc787c":"gFoxr","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6AiN0":[function(require,module,exports) {
 module.exports = require("a02f5459162e8754").getBundleURL("UckoE") + "incomeMessage.b3b9f991.mp3" + "?" + Date.now();
 
 },{"a02f5459162e8754":"lgJ39"}],"lgJ39":[function(require,module,exports) {

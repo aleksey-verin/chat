@@ -6,6 +6,7 @@ export const UI_ELEMENTS = {
   },
   THEME_SWITCHER: document.querySelector('.theme-switcher input'),
   CONNECTION_LIGHT: document.querySelector('.connection'),
+  BUTTON_EXIT: document.querySelector('.exit'),
   MESSAGE_LIST: document.querySelector('main'),
   TEMPLATE_MESSAGE: document.querySelector('#templateMessage'),
   FORM_MESSAGE: document.querySelector('.send-message'),

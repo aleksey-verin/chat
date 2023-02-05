@@ -69,6 +69,17 @@ async function socketConnection(token) {
     }
   }
   UI_ELEMENTS.FORM_MESSAGE.addEventListener('submit', sendMessage)
+
+  function loginOut() {
+    socket.close(1000, 'работа закончена')
+    Cookies.remove('chat-name')
+    Cookies.remove('chat-token')
+    Cookies.remove('chat-email')
+    Cookies.remove('currentInputValue')
+    window.location.reload()
+  }
+
+  UI_ELEMENTS.BUTTON_EXIT.addEventListener('click', loginOut)
 }
 
 export default socketConnection
