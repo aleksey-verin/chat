@@ -3914,6 +3914,7 @@ var _uiElements = require("./ui-elements");
 var _handlers = require("./handlers");
 // import { socketConnection } from './socket'
 var _index = require("./index");
+const url = "https://edu.strada.one/api/user";
 let userName = (0, _jsCookieDefault.default).get("chat-name") || "";
 // ==================  Кнопка "Настройки"  ==================
 (0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS.addEventListener("click", ()=>{
@@ -4016,7 +4017,7 @@ function userIndentification(event) {
     if (!userEmail.length) return;
     event.target.reset();
     (0, _handlers.showSpinnerAndDisableForm)(true);
-    const response = fetch("https://edu.strada.one/api/user", {
+    const response = fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -4045,7 +4046,7 @@ function userAuthentification(event) {
     if (!token.length) return;
     event.target.reset();
     (0, _handlers.showSpinnerAndDisableForm)(true);
-    const response = fetch("https://edu.strada.one/api/user/me", {
+    const response = fetch(`${url}/me`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`
@@ -4057,7 +4058,6 @@ function userAuthentification(event) {
     }).then((json)=>{
         if (json) {
             const { name , email , token: userToken  } = json;
-            console.log(userToken);
             userName = name;
             (0, _jsCookieDefault.default).set("chat-name", name, {
                 expires: 2
@@ -4068,7 +4068,6 @@ function userAuthentification(event) {
             (0, _jsCookieDefault.default).set("chat-email", email, {
                 expires: 2
             });
-            console.log((0, _jsCookieDefault.default).get("chat-token"));
             (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SUCCESS, name);
             removePopup();
             (0, _index.downloadMessagesFromTheServer)();
@@ -4089,7 +4088,7 @@ function changeUserName(event) {
     const newUserName = event.target[0].value;
     if (!newUserName.length || newUserName === userName) return;
     (0, _handlers.showSpinnerAndDisableForm)(true);
-    const response = fetch("https://edu.strada.one/api/user", {
+    const response = fetch(url, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,

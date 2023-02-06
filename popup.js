@@ -8,6 +8,8 @@ import {
 // import { socketConnection } from './socket'
 import { downloadMessagesFromTheServer } from './index'
 
+const url = 'https://edu.strada.one/api/user'
+
 let userName = Cookies.get('chat-name') || ''
 
 // ==================  Кнопка "Настройки"  ==================
@@ -146,7 +148,7 @@ function userIndentification(event) {
   event.target.reset()
   showSpinnerAndDisableForm(true)
 
-  const response = fetch('https://edu.strada.one/api/user', {
+  const response = fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -182,7 +184,7 @@ function userAuthentification(event) {
   event.target.reset()
   showSpinnerAndDisableForm(true)
 
-  const response = fetch('https://edu.strada.one/api/user/me', {
+  const response = fetch(`${url}/me`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -198,12 +200,10 @@ function userAuthentification(event) {
     .then((json) => {
       if (json) {
         const { name, email, token: userToken } = json
-        console.log(userToken)
         userName = name
         Cookies.set('chat-name', name, { expires: 2 })
         Cookies.set('chat-token', userToken, { expires: 2 })
         Cookies.set('chat-email', email, { expires: 2 })
-        console.log(Cookies.get('chat-token'))
         showNotification(NOTE.TYPE, NOTE.SUCCESS, name)
         removePopup()
         downloadMessagesFromTheServer()
@@ -233,7 +233,7 @@ function changeUserName(event) {
   }
   showSpinnerAndDisableForm(true)
 
-  const response = fetch('https://edu.strada.one/api/user', {
+  const response = fetch(url, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${Cookies.get('chat-token')}`,
