@@ -1,9 +1,11 @@
 import Cookies from 'js-cookie'
-import { addMessage, scrollToLastUserMessage } from './index'
+import { scrollToLastUserMessage } from './handlers'
+import { addMessage } from './messages'
 import { UI_ELEMENTS } from './ui-elements'
-// import { playIncomeMessage, playOutcomeMessage } from './sounds'
 
-function connectionLight(action) {
+const url = 'wss://edu.strada.one/websockets?'
+
+function connectionLight(action: boolean) {
   if (action) {
     UI_ELEMENTS.CONNECTION_LIGHT.classList.add('connect')
   } else {
@@ -11,16 +13,17 @@ function connectionLight(action) {
   }
 }
 
-async function socketConnection(token) {
-  // console.log('внутри сокета')
+function socketConnection(token: string | null) {
+  // debugger
   if (!token) {
     return
   }
 
-  const socket = new WebSocket(`wss://edu.strada.one/websockets?${token}`)
+  const socket = new WebSocket(`${url}${token}`)
 
   socket.onopen = () => {
     connectionLight(true)
+    console.log('Connected')
   }
   socket.onmessage = (event) => {
     const {
@@ -28,10 +31,9 @@ async function socketConnection(token) {
       text,
       user: { email, name },
     } = JSON.parse(event.data)
-    addMessage(text, email, name, createdAt)
+    addMessage(text, email, name, createdAt, 'socket')
 
     if (email !== Cookies.get('chat-email')) {
-      // playOutcomeMessage()
       UI_ELEMENTS.AUDIO_INCOME_MESSAGE.muted = false
       UI_ELEMENTS.AUDIO_INCOME_MESSAGE.play()
     }
@@ -60,13 +62,13 @@ async function socketConnection(token) {
     }
   })
 
-  function sendMessage(event) {
+  function sendMessage(event: Event) {
     event.preventDefault()
-    const userMessage = event.target[0].value.trim()
+    const userMessage: string = UI_ELEMENTS.FORM_TEXTAREA.value.trim()
     if (userMessage.length) {
       socket.send(JSON.stringify({ text: userMessage }))
-      event.target.reset()
-      Cookies.set('chat-currentInputValue', '', { expires: 2 })
+      ;(event.target as HTMLFormElement).reset()
+      sessionStorage.removeItem('chat-currentInputValue')
       UI_ELEMENTS.FORM_TEXTAREA.style.height = ''
     }
   }
@@ -77,7 +79,7 @@ async function socketConnection(token) {
     Cookies.remove('chat-name')
     Cookies.remove('chat-token')
     Cookies.remove('chat-email')
-    Cookies.remove('currentInputValue')
+    sessionStorage.removeItem('chat-currentInputValue')
     window.location.reload()
   }
 

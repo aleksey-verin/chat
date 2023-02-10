@@ -149,7 +149,7 @@ body {
   }
 }
 
-@media (max-width: 797px) {
+@media (max-width: 397px) {
   body {
     align-items: unset;
   }
@@ -202,8 +202,6 @@ textarea {
 header {
   display: flex;
   justify-content: space-between;
-}
-.exit {
 }
 // =======================    MAIN
 main {
@@ -468,15 +466,15 @@ footer {
   cursor: default;
   color: var(--color-3);
 }
-.spinner-messages,
-.spinner {
+.loader-messages,
+.loader {
   display: none;
   width: 50px;
   height: 50px;
   margin: 0 auto;
 }
-.spinner-messages.active,
-.spinner.active {
+.loader-messages.active,
+.loader.active {
   display: block;
 }
 

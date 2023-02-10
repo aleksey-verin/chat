@@ -110,7 +110,7 @@ body {
   }
 }
 
-@media (max-width: 797px) {
+@media (max-width: 397px) {
   body {
     -webkit-box-align: unset;
     -ms-flex-align: unset;
@@ -398,14 +398,14 @@ footer {
   color: var(--color-3);
 }
 
-.spinner-messages, .spinner {
+.loader-messages, .loader {
   width: 50px;
   height: 50px;
   margin: 0 auto;
   display: none;
 }
 
-.spinner-messages.active, .spinner.active {
+.loader-messages.active, .loader.active {
   display: block;
 }
 

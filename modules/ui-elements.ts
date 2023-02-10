@@ -1,17 +1,23 @@
-export const UI_ELEMENTS = {
-  BODY: document.querySelector('body'),
+const UI_ELEMENTS = {
+  BODY: document.querySelector('body') as HTMLBodyElement,
   CONTAINER: document.querySelector('.container'),
   BUTTONS: {
-    SETTINGS: document.querySelector('.settings'),
+    SETTINGS: document.querySelector('.settings') as HTMLButtonElement,
   },
-  THEME_SWITCHER: document.querySelector('.theme-switcher input'),
-  CONNECTION_LIGHT: document.querySelector('.connection'),
-  BUTTON_EXIT: document.querySelector('.exit'),
-  MESSAGE_LIST: document.querySelector('main'),
-  TEMPLATE_MESSAGE: document.querySelector('#templateMessage'),
-  FORM_MESSAGE: document.querySelector('.send-message'),
-  FORM_TEXTAREA: document.querySelector('.textarea-message'),
-  BUTTON_SCROLL: document.querySelector('.scroll'),
+  THEME_SWITCHER: document.querySelector(
+    '.theme-switcher input'
+  ) as HTMLInputElement,
+  CONNECTION_LIGHT: document.querySelector('.connection') as HTMLDivElement,
+  BUTTON_EXIT: document.querySelector('.exit') as HTMLButtonElement,
+  MESSAGE_LIST: document.querySelector('main') as HTMLDivElement,
+  TEMPLATE_MESSAGE: document.querySelector(
+    '#templateMessage'
+  ) as HTMLTemplateElement,
+  FORM_MESSAGE: document.querySelector('.send-message') as HTMLFormElement,
+  FORM_TEXTAREA: document.querySelector(
+    '.textarea-message'
+  ) as HTMLTextAreaElement,
+  BUTTON_SCROLL: document.querySelector('.scroll') as HTMLButtonElement,
   MODAL_WINDOW: {
     WINDOW: document.querySelector('.popup'),
     CONTAINER: document.querySelector('.popup-container'),
@@ -25,22 +31,24 @@ export const UI_ELEMENTS = {
     CLOSE_SVG: document.querySelector('.close-svg'),
     SPINNER: document.querySelector('.spinner'),
   },
-  AUDIO_INCOME_MESSAGE: document.querySelector('#notification'),
+  AUDIO_INCOME_MESSAGE: document.querySelector(
+    '#notification'
+  ) as HTMLAudioElement,
 }
-export const ERROR = {
+const ERROR = {
   TYPE: 'error',
   SERVER_ERROR: 'Ошибка при запросе на сервер. Попробуйте позже..',
   EMAIL_ERROR: 'Неправильный адрес почты. Попробуйте еще раз..',
   CODE_ERROR: 'Неправильный КОД. Введите еще раз..',
   OTHER_ERROR: 'Ошибка. Попробуйте зайти позже..',
 }
-export const NOTE = {
+const NOTE = {
   TYPE: 'notification',
   SEND_EMAIL: 'Письмо с кодом успешно отправлено. Проверьте почтовый ящик..',
-  SUCCESS: 'Отлично! Сейчас ваше имя в чате: ',
+  SUCCESS: 'Вход выполнен! Ваше имя в чате: ',
   CHANGE_USERNAME: 'Отлично! Вы поменяли имя на: ',
 }
-export const TYPE_MODAL_WINDOW = {
+const TYPE_MODAL_WINDOW: modalWindowTypes = {
   LOGIN: {
     NAME: 'LOGIN',
     TITLE: 'Авторизация',
@@ -68,3 +76,17 @@ export const TYPE_MODAL_WINDOW = {
     PLACEHOLDER: 'ваше имя в чате..',
   },
 }
+
+interface modalWindowTypes {
+  [LOGIN: string]: {
+    NAME: string
+    TITLE: string
+    CONTENT_TITLE: string
+    BUTTON_GO: string
+    LINK_CODE?: string
+    INPUT_TYPE: string
+    PLACEHOLDER: string
+  }
+}
+
+export { UI_ELEMENTS, ERROR, NOTE, TYPE_MODAL_WINDOW }

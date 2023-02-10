@@ -142,13 +142,13 @@
       this[globalName] = mainExports;
     }
   }
-})({"8BXtR":[function(require,module,exports) {
+})({"6AjTz":[function(require,module,exports) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
-module.bundle.HMR_BUNDLE_ID = "0a8ecb283d214d75";
+module.bundle.HMR_BUNDLE_ID = "78fcd0ac8e9bd240";
 "use strict";
 /* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, chrome, browser, globalThis, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
@@ -556,7 +556,7 @@ function hmrAccept(bundle, id) {
     });
 }
 
-},{}],"bB7Pu":[function(require,module,exports) {
+},{}],"1jwFz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "downloadMessagesFromTheServer", ()=>downloadMessagesFromTheServer);
@@ -681,127 +681,7 @@ function submitOnEnter(event) {
 });
 if (sessionStorage.getItem("chat-currentInputValue")) (0, _uiElements.UI_ELEMENTS).FORM_TEXTAREA.value = sessionStorage.getItem("chat-currentInputValue");
 
-},{"js-cookie":"c8bBu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","date-fns":"9yHCA","./ui-elements":"ghRIp","./popup":"jpJ9p","./handlers":"hCzvv","./socket":"duoz3"}],"c8bBu":[function(require,module,exports) {
-(function(global, factory) {
-    module.exports = factory();
-})(this, function() {
-    "use strict";
-    /* eslint-disable no-var */ function assign(target) {
-        for(var i = 1; i < arguments.length; i++){
-            var source = arguments[i];
-            for(var key in source)target[key] = source[key];
-        }
-        return target;
-    }
-    /* eslint-enable no-var */ /* eslint-disable no-var */ var defaultConverter = {
-        read: function(value) {
-            if (value[0] === '"') value = value.slice(1, -1);
-            return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent);
-        },
-        write: function(value) {
-            return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent);
-        }
-    };
-    /* eslint-enable no-var */ /* eslint-disable no-var */ function init(converter, defaultAttributes) {
-        function set(key, value, attributes) {
-            if (typeof document === "undefined") return;
-            attributes = assign({}, defaultAttributes, attributes);
-            if (typeof attributes.expires === "number") attributes.expires = new Date(Date.now() + attributes.expires * 864e5);
-            if (attributes.expires) attributes.expires = attributes.expires.toUTCString();
-            key = encodeURIComponent(key).replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent).replace(/[()]/g, escape);
-            var stringifiedAttributes = "";
-            for(var attributeName in attributes){
-                if (!attributes[attributeName]) continue;
-                stringifiedAttributes += "; " + attributeName;
-                if (attributes[attributeName] === true) continue;
-                // Considers RFC 6265 section 5.2:
-                // ...
-                // 3.  If the remaining unparsed-attributes contains a %x3B (";")
-                //     character:
-                // Consume the characters of the unparsed-attributes up to,
-                // not including, the first %x3B (";") character.
-                // ...
-                stringifiedAttributes += "=" + attributes[attributeName].split(";")[0];
-            }
-            return document.cookie = key + "=" + converter.write(value, key) + stringifiedAttributes;
-        }
-        function get(key) {
-            if (typeof document === "undefined" || arguments.length && !key) return;
-            // To prevent the for loop in the first place assign an empty array
-            // in case there are no cookies at all.
-            var cookies = document.cookie ? document.cookie.split("; ") : [];
-            var jar = {};
-            for(var i = 0; i < cookies.length; i++){
-                var parts = cookies[i].split("=");
-                var value = parts.slice(1).join("=");
-                try {
-                    var foundKey = decodeURIComponent(parts[0]);
-                    jar[foundKey] = converter.read(value, foundKey);
-                    if (key === foundKey) break;
-                } catch (e) {}
-            }
-            return key ? jar[key] : jar;
-        }
-        return Object.create({
-            set: set,
-            get: get,
-            remove: function(key, attributes) {
-                set(key, "", assign({}, attributes, {
-                    expires: -1
-                }));
-            },
-            withAttributes: function(attributes) {
-                return init(this.converter, assign({}, this.attributes, attributes));
-            },
-            withConverter: function(converter) {
-                return init(assign({}, this.converter, converter), this.attributes);
-            }
-        }, {
-            attributes: {
-                value: Object.freeze(defaultAttributes)
-            },
-            converter: {
-                value: Object.freeze(converter)
-            }
-        });
-    }
-    var api = init(defaultConverter, {
-        path: "/"
-    });
-    /* eslint-enable no-var */ return api;
-});
-
-},{}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"9yHCA":[function(require,module,exports) {
+},{"date-fns":"9yHCA","js-cookie":"c8bBu","./ui-elements":"hAent","./popup":"lxNJy","./handlers":"g9sWB","./socket":"kLAgo","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9yHCA":[function(require,module,exports) {
 // This file is generated automatically by `scripts/build/indices.ts`. Please, don't change it.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -1553,7 +1433,37 @@ function toInteger(dirtyNumber) {
 }
 exports.default = toInteger;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fsust":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"fsust":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _indexJs = require("../_lib/requiredArgs/index.js");
@@ -3819,7 +3729,97 @@ var secondsInYear = secondsInDay * daysInYear;
 var secondsInMonth = secondsInYear / 12;
 var secondsInQuarter = secondsInMonth * 3;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ghRIp":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c8bBu":[function(require,module,exports) {
+(function(global, factory) {
+    module.exports = factory();
+})(this, function() {
+    "use strict";
+    /* eslint-disable no-var */ function assign(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source)target[key] = source[key];
+        }
+        return target;
+    }
+    /* eslint-enable no-var */ /* eslint-disable no-var */ var defaultConverter = {
+        read: function(value) {
+            if (value[0] === '"') value = value.slice(1, -1);
+            return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent);
+        },
+        write: function(value) {
+            return encodeURIComponent(value).replace(/%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g, decodeURIComponent);
+        }
+    };
+    /* eslint-enable no-var */ /* eslint-disable no-var */ function init(converter, defaultAttributes) {
+        function set(key, value, attributes) {
+            if (typeof document === "undefined") return;
+            attributes = assign({}, defaultAttributes, attributes);
+            if (typeof attributes.expires === "number") attributes.expires = new Date(Date.now() + attributes.expires * 864e5);
+            if (attributes.expires) attributes.expires = attributes.expires.toUTCString();
+            key = encodeURIComponent(key).replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent).replace(/[()]/g, escape);
+            var stringifiedAttributes = "";
+            for(var attributeName in attributes){
+                if (!attributes[attributeName]) continue;
+                stringifiedAttributes += "; " + attributeName;
+                if (attributes[attributeName] === true) continue;
+                // Considers RFC 6265 section 5.2:
+                // ...
+                // 3.  If the remaining unparsed-attributes contains a %x3B (";")
+                //     character:
+                // Consume the characters of the unparsed-attributes up to,
+                // not including, the first %x3B (";") character.
+                // ...
+                stringifiedAttributes += "=" + attributes[attributeName].split(";")[0];
+            }
+            return document.cookie = key + "=" + converter.write(value, key) + stringifiedAttributes;
+        }
+        function get(key) {
+            if (typeof document === "undefined" || arguments.length && !key) return;
+            // To prevent the for loop in the first place assign an empty array
+            // in case there are no cookies at all.
+            var cookies = document.cookie ? document.cookie.split("; ") : [];
+            var jar = {};
+            for(var i = 0; i < cookies.length; i++){
+                var parts = cookies[i].split("=");
+                var value = parts.slice(1).join("=");
+                try {
+                    var foundKey = decodeURIComponent(parts[0]);
+                    jar[foundKey] = converter.read(value, foundKey);
+                    if (key === foundKey) break;
+                } catch (e) {}
+            }
+            return key ? jar[key] : jar;
+        }
+        return Object.create({
+            set: set,
+            get: get,
+            remove: function(key, attributes) {
+                set(key, "", assign({}, attributes, {
+                    expires: -1
+                }));
+            },
+            withAttributes: function(attributes) {
+                return init(this.converter, assign({}, this.attributes, attributes));
+            },
+            withConverter: function(converter) {
+                return init(assign({}, this.converter, converter), this.attributes);
+            }
+        }, {
+            attributes: {
+                value: Object.freeze(defaultAttributes)
+            },
+            converter: {
+                value: Object.freeze(converter)
+            }
+        });
+    }
+    var api = init(defaultConverter, {
+        path: "/"
+    });
+    /* eslint-enable no-var */ return api;
+});
+
+},{}],"hAent":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "UI_ELEMENTS", ()=>UI_ELEMENTS);
@@ -3897,7 +3897,7 @@ const TYPE_MODAL_WINDOW = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jpJ9p":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lxNJy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // ==================  Закрываем модальное окно  ==================
@@ -4113,7 +4113,7 @@ function changeUserName(event) {
     });
 }
 
-},{"js-cookie":"c8bBu","./ui-elements":"ghRIp","./handlers":"hCzvv","./index":"bB7Pu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hCzvv":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./ui-elements":"hAent","./handlers":"g9sWB","./index":"1jwFz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"g9sWB":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 // ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
@@ -4181,7 +4181,7 @@ function showSpinnerAndDisableForm(active) {
     }
 }
 
-},{"./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"duoz3":[function(require,module,exports) {
+},{"./ui-elements":"hAent","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kLAgo":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jsCookie = require("js-cookie");
@@ -4249,6 +4249,6 @@ async function socketConnection(token) {
 }
 exports.default = socketConnection;
 
-},{"js-cookie":"c8bBu","./index":"bB7Pu","./ui-elements":"ghRIp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8BXtR","bB7Pu"], "bB7Pu", "parcelRequire2c1f")
+},{"js-cookie":"c8bBu","./index":"1jwFz","./ui-elements":"hAent","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["6AjTz","1jwFz"], "1jwFz", "parcelRequire2c1f")
 
-//# sourceMappingURL=index.3d214d75.js.map
+//# sourceMappingURL=index.8e9bd240.js.map
