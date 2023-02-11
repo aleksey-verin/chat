@@ -569,25 +569,25 @@ var _uiElements = require("./ui-elements");
 let isAuth = (0, _jsCookieDefault.default).get("chat-token") || null;
 isAuth ? startConnections() : (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME);
 function startConnections() {
-    (0, _messages.downloadMessagesFromTheServer)();
+    (0, _messages.downloadMessagesFromTheServer)(isAuth);
     (0, _socketDefault.default)(isAuth);
 }
 // ==================  Кнопка "Настройки"  ==================
 (0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS.addEventListener("click", ()=>{
     (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME);
-});
-// ==================  Кнопка "Выйти"  ==================
-function loginOut() {
-    // socket.close(1000, 'работа закончена')
-    (0, _jsCookieDefault.default).remove("chat-name");
-    (0, _jsCookieDefault.default).remove("chat-token");
-    (0, _jsCookieDefault.default).remove("chat-email");
-    sessionStorage.removeItem("chat-currentInputValue");
-    window.location.reload();
-}
-(0, _uiElements.UI_ELEMENTS).BUTTON_EXIT.addEventListener("click", loginOut);
+}) // // ==================  Кнопка "Выйти"  ==================
+ // function loginOut() {
+ //   // socket.close(1000, 'работа закончена')
+ //   Cookies.remove('chat-name')
+ //   Cookies.remove('chat-token')
+ //   Cookies.remove('chat-email')
+ //   sessionStorage.removeItem('chat-currentInputValue')
+ //   window.location.reload()
+ // }
+ // UI_ELEMENTS.BUTTON_EXIT.addEventListener('click', loginOut)
+;
 
-},{"js-cookie":"c8bBu","./messages":"dqxAp","./popup":"bj9bb","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./socket":"dqoPl"}],"c8bBu":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./messages":"dqxAp","./popup":"bj9bb","./socket":"dqoPl","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c8bBu":[function(require,module,exports) {
 (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -687,30 +687,29 @@ var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
 var _dateFns = require("date-fns");
 var _handlers = require("./handlers");
 var _uiElements = require("./ui-elements");
+var _fetch = require("./fetch");
 // ==================  Параметры для псевдо-пагинации  ==================
 let allMessages = [];
 const step = 20;
 let startPosition = 0;
 let finalPosition = 0;
-function downloadMessagesFromTheServer() {
+async function downloadMessagesFromTheServer(token) {
     (0, _handlers.showLoaderForMessages)(true);
-    const response = fetch("https://edu.strada.one/api/messages/", {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`
-        }
-    });
-    response.then((answer)=>answer.json()).then((messages)=>{
-        allMessages = messages.messages;
+    try {
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
+        const json = await (0, _fetch.makeFetchRequest)(`${(0, _fetch.url)}${(0, _fetch._messages)}`, "GET", headers);
+        allMessages = json.messages;
         finalPosition = allMessages.length;
         prepareMessages(startPosition);
-    }).catch(()=>{
+    } catch (error) {
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-    }).finally(()=>{
+    } finally{
         (0, _handlers.showLoaderForMessages)(false);
-    });
+    }
 }
-// ==================  Загрузка сообщений при скролле  ==================
+// ==================  Подгрузка сообщений при скролле  ==================
 (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.addEventListener("scroll", downloadMoreMessages);
 function downloadMoreMessages(event) {
     const elem = event.target;
@@ -751,7 +750,7 @@ function addMessage(text, email, name, time, type) {
     else (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.prepend(message);
 }
 
-},{"js-cookie":"c8bBu","date-fns":"9yHCA","./handlers":"3t0ns","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9yHCA":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","date-fns":"9yHCA","./handlers":"3t0ns","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./fetch":"aWsMw"}],"9yHCA":[function(require,module,exports) {
 // This file is generated automatically by `scripts/build/indices.ts`. Please, don't change it.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -3984,7 +3983,114 @@ const TYPE_MODAL_WINDOW = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bj9bb":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aWsMw":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "makeFetchRequest", ()=>makeFetchRequest);
+parcelHelpers.export(exports, "userIndentification", ()=>userIndentification);
+parcelHelpers.export(exports, "userAuthentification", ()=>userAuthentification);
+parcelHelpers.export(exports, "changeUserName", ()=>changeUserName);
+parcelHelpers.export(exports, "url", ()=>url);
+parcelHelpers.export(exports, "_messages", ()=>_messages1);
+var _jsCookie = require("js-cookie");
+var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
+var _handlers = require("./handlers");
+var _messages = require("./messages");
+var _popup = require("./popup");
+var _socket = require("./socket");
+var _socketDefault = parcelHelpers.interopDefault(_socket);
+var _uiElements = require("./ui-elements");
+const url = "https://edu.strada.one/api/";
+const _user = "user/";
+const _messages1 = "messages/";
+// ==================  Общий fetch-запрос на сервер ==================
+async function makeFetchRequest(url, method, headers, body) {
+    const response = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+    });
+    if (!response.ok) {
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+        throw new Error(response.statusText);
+    }
+    return response.json();
+}
+// ==================  Идентификация пользователя ==================
+async function userIndentification(userEmail) {
+    (0, _handlers.showLoaderAndDisableForm)(true);
+    try {
+        const headers = {
+            "Content-Type": "application/json"
+        };
+        const body = {
+            email: userEmail
+        };
+        await makeFetchRequest(`${url}${_user}`, "POST", headers, body);
+        (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SEND_EMAIL);
+        (0, _popup.removePopup)();
+        (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME);
+    } catch (error) {
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).EMAIL_ERROR);
+    } finally{
+        (0, _handlers.showLoaderAndDisableForm)(false);
+    }
+}
+// ==================  Авторизация пользователя ==================
+async function userAuthentification(token) {
+    (0, _handlers.showLoaderAndDisableForm)(true);
+    try {
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
+        const json = await makeFetchRequest(`${url}${_user}/me`, "GET", headers);
+        const { name , email , token: userToken  } = json;
+        (0, _jsCookieDefault.default).set("chat-name", name, {
+            expires: 2
+        });
+        (0, _jsCookieDefault.default).set("chat-token", userToken, {
+            expires: 2
+        });
+        (0, _jsCookieDefault.default).set("chat-email", email, {
+            expires: 2
+        });
+        (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SUCCESS, name);
+        (0, _popup.removePopup)();
+        (0, _messages.downloadMessagesFromTheServer)(token);
+        (0, _socketDefault.default)(userToken);
+    } catch (error) {
+        if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+        else (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).CODE_ERROR);
+    } finally{
+        (0, _handlers.showLoaderAndDisableForm)(false);
+    }
+}
+// ==================  Изменение имени пользователя ==================
+async function changeUserName(newUserName) {
+    (0, _handlers.showLoaderAndDisableForm)(true);
+    try {
+        const headers = {
+            Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,
+            "Content-Type": "application/json"
+        };
+        const body = {
+            name: newUserName
+        };
+        const json = await makeFetchRequest(`${url}${_user}`, "PATCH", headers, body);
+        const { name  } = json;
+        (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).CHANGE_USERNAME, name);
+        (0, _jsCookieDefault.default).set("chat-name", name, {
+            expires: 2
+        });
+    } catch (error) {
+        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
+    } finally{
+        (0, _handlers.showLoaderAndDisableForm)(false);
+    // window.location.reload()
+    }
+}
+
+},{"js-cookie":"c8bBu","./handlers":"3t0ns","./messages":"dqxAp","./popup":"bj9bb","./socket":"dqoPl","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bj9bb":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "createPopup", ()=>createPopup);
@@ -3998,11 +4104,11 @@ var _fetch = require("./fetch");
 function removePopup() {
     document.querySelector(".popup").remove();
 }
-function closePopupByClickOnEmptySpace(event1) {
-    if (event1.target.classList.contains("popup")) removePopup();
+function closePopupByClickOnEmptySpace(event) {
+    if (event.target.classList.contains("popup")) removePopup();
 }
-function closePopupByPressOnEscape(event1) {
-    if (event1.code === "Escape") removePopup();
+function closePopupByPressOnEscape(event) {
+    if (event.code === "Escape") removePopup();
 }
 // ==================  Создаем модальное окно  ==================
 function createPopup(type) {
@@ -4032,7 +4138,7 @@ function createPopup(type) {
     contentTitle.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].CONTENT_TITLE;
     const contentForm = document.createElement("form");
     contentForm.classList.add("content-form");
-    contentForm.addEventListener("submit", ()=>handleWithForm(event, type));
+    contentForm.addEventListener("submit", (event)=>handleWithForm(event, type));
     const contentInput = document.createElement("input");
     contentInput.classList.add("content-input");
     contentInput.type = (0, _uiElements.TYPE_MODAL_WINDOW)[type].INPUT_TYPE;
@@ -4075,11 +4181,16 @@ function createPopup(type) {
     (0, _uiElements.UI_ELEMENTS).BODY.append(popup);
 }
 // ==================  Функции на кнопках модального окна ==================
-function handleWithForm(event1, type) {
-    event1.preventDefault();
-    const value = event1.target[0].value;
+function handleWithForm(event, type) {
+    event.preventDefault();
+    const target = event.target;
+    const input = target.elements[0];
+    const value = input.value;
     if (!value.length) return;
     (0, _handlers.showLoaderAndDisableForm)(true);
+    // const value = event.target[0].value
+    // if (!value.length) return
+    // showLoaderAndDisableForm(true)
     switch(type){
         case (0, _uiElements.TYPE_MODAL_WINDOW).LOGIN.NAME:
             (0, _fetch.userIndentification)(value);
@@ -4096,109 +4207,7 @@ function handleWithForm(event1, type) {
     }
 }
 
-},{"js-cookie":"c8bBu","./ui-elements":"9rmm2","./handlers":"3t0ns","./fetch":"aWsMw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aWsMw":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "userIndentification", ()=>userIndentification);
-parcelHelpers.export(exports, "userAuthentification", ()=>userAuthentification);
-parcelHelpers.export(exports, "changeUserName", ()=>changeUserName);
-var _jsCookie = require("js-cookie");
-var _jsCookieDefault = parcelHelpers.interopDefault(_jsCookie);
-var _handlers = require("./handlers");
-var _messages = require("./messages");
-var _popup = require("./popup");
-var _socket = require("./socket");
-var _socketDefault = parcelHelpers.interopDefault(_socket);
-var _uiElements = require("./ui-elements");
-const url = "https://edu.strada.one/api/user";
-// ==================  Идентификация пользователя ==================
-function userIndentification(userEmail) {
-    const response = fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            email: userEmail
-        })
-    });
-    response.then((answer)=>{
-        if (answer.ok) {
-            (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SEND_EMAIL);
-            (0, _popup.removePopup)();
-            (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).CODE.NAME);
-            return answer.json();
-        }
-        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).EMAIL_ERROR);
-    }).catch(()=>{
-        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-    }).finally(()=>{
-        (0, _handlers.showLoaderAndDisableForm)(false);
-    });
-}
-// ==================  Авторизация пользователя ==================
-function userAuthentification(token) {
-    const response = fetch(`${url}/me`, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-    response.then((answer)=>{
-        if (answer.ok) return answer.json();
-        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).CODE_ERROR);
-    }).then((json)=>{
-        if (json) {
-            const { name , email , token: userToken  } = json;
-            (0, _jsCookieDefault.default).set("chat-name", name, {
-                expires: 2
-            });
-            (0, _jsCookieDefault.default).set("chat-token", userToken, {
-                expires: 2
-            });
-            (0, _jsCookieDefault.default).set("chat-email", email, {
-                expires: 2
-            });
-            (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SUCCESS, name);
-            (0, _popup.removePopup)();
-            (0, _messages.downloadMessagesFromTheServer)();
-            (0, _socketDefault.default)(userToken);
-        }
-    }).catch((error)=>{
-        if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-    }).finally(()=>{
-        (0, _handlers.showLoaderAndDisableForm)(false);
-    });
-}
-// ==================  Изменение имени пользователя ==================
-function changeUserName(newUserName) {
-    const response = fetch(url, {
-        method: "PATCH",
-        headers: {
-            Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: newUserName
-        })
-    });
-    response.then((answer)=>{
-        if (answer.ok) return answer.json();
-        return (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-    }).then(({ name  })=>{
-        (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).CHANGE_USERNAME, name);
-        (0, _jsCookieDefault.default).set("chat-name", name, {
-            expires: 2
-        });
-    }).catch(()=>{
-        (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
-    }).finally(()=>{
-        (0, _handlers.showLoaderAndDisableForm)(false);
-        window.location.reload();
-    });
-}
-
-},{"js-cookie":"c8bBu","./handlers":"3t0ns","./messages":"dqxAp","./popup":"bj9bb","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./socket":"dqoPl"}],"dqoPl":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","./ui-elements":"9rmm2","./handlers":"3t0ns","./fetch":"aWsMw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dqoPl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _jsCookie = require("js-cookie");

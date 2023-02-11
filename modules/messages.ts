@@ -2,55 +2,55 @@ import Cookies from 'js-cookie'
 import { format, parseISO } from 'date-fns'
 import { showLoaderForMessages, showNotification } from './handlers'
 import { ERROR, UI_ELEMENTS } from './ui-elements'
+import { makeFetchRequest, url, _messages } from './fetch'
 
 // ==================  Параметры для псевдо-пагинации  ==================
 
-let allMessages: Message[] = []
+let allMessages: iMessage[] = []
 const step: number = 20
 let startPosition = 0
 let finalPosition: number = 0
 
 // ==================  Загрузить сообщения с сервера  ==================
 
-interface User {
+interface iUser {
   email: string
   name: string
 }
 
-interface Message {
+interface iMessage {
   _id: string
   text: string
-  user: User
+  user: iUser
   createdAt: string
   updatedAt: string
   __v: number
 }
-
-function downloadMessagesFromTheServer() {
-  showLoaderForMessages(true)
-
-  const response = fetch('https://edu.strada.one/api/messages/', {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${Cookies.get('chat-token')}`,
-    },
-  })
-  response
-    .then((answer) => answer.json())
-    .then((messages) => {
-      allMessages = messages.messages
-      finalPosition = allMessages.length
-      prepareMessages(startPosition)
-    })
-    .catch(() => {
-      showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
-    })
-    .finally(() => {
-      showLoaderForMessages(false)
-    })
+interface iRootMessages {
+  messages: iMessage[]
 }
 
-// ==================  Загрузка сообщений при скролле  ==================
+async function downloadMessagesFromTheServer(token: string) {
+  showLoaderForMessages(true)
+
+  try {
+    const headers = { Authorization: `Bearer ${token}` }
+    const json: iRootMessages = await makeFetchRequest(
+      `${url}${_messages}`,
+      'GET',
+      headers
+    )
+    allMessages = json.messages
+    finalPosition = allMessages.length
+    prepareMessages(startPosition)
+  } catch (error) {
+    showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
+  } finally {
+    showLoaderForMessages(false)
+  }
+}
+
+// ==================  Подгрузка сообщений при скролле  ==================
 
 UI_ELEMENTS.MESSAGE_LIST.addEventListener('scroll', downloadMoreMessages)
 

@@ -55,7 +55,7 @@ function createPopup(type: string) {
 
   const contentForm = document.createElement('form')
   contentForm.classList.add('content-form')
-  contentForm.addEventListener('submit', () => handleWithForm(event, type))
+  contentForm.addEventListener('submit', (event) => handleWithForm(event, type))
 
   const contentInput = document.createElement('input')
   contentInput.classList.add('content-input')
@@ -118,10 +118,18 @@ function createPopup(type: string) {
 
 function handleWithForm(event: Event, type: string) {
   event.preventDefault()
-  const value = event.target[0].value
-  if (!value.length) return
-
+  const target = event.target as HTMLFormElement
+  const input = target.elements[0] as HTMLInputElement
+  const value = input.value
+  if (!value.length) {
+    return
+  }
   showLoaderAndDisableForm(true)
+
+  // const value = event.target[0].value
+  // if (!value.length) return
+
+  // showLoaderAndDisableForm(true)
 
   switch (type) {
     case TYPE_MODAL_WINDOW.LOGIN.NAME:
