@@ -1,8 +1,8 @@
 const UI_ELEMENTS = {
-  BODY: document.querySelector('body') as HTMLBodyElement,
+  BODY: document.querySelector('body') as HTMLBodyElement | null,
   CONTAINER: document.querySelector('.container'),
   BUTTONS: {
-    SETTINGS: document.querySelector('.settings') as HTMLButtonElement,
+    SETTINGS: document.querySelector('.settings') as HTMLButtonElement | null,
   },
   THEME_SWITCHER: document.querySelector(
     '.theme-switcher input'
@@ -47,6 +47,7 @@ const NOTE = {
   SEND_EMAIL: 'Письмо с кодом успешно отправлено. Проверьте почтовый ящик..',
   SUCCESS: 'Вход выполнен! Ваше имя в чате: ',
   CHANGE_USERNAME: 'Отлично! Вы поменяли имя на: ',
+  SAME_USERNAME: 'Не сохранено. Ваше имя в чате: ',
 }
 const TYPE_MODAL_WINDOW: modalWindowTypes = {
   LOGIN: {

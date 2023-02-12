@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 import { UI_ELEMENTS, TYPE_MODAL_WINDOW, NOTE, ERROR } from './ui-elements'
-import { createLoadingLoader, showLoaderAndDisableForm } from './handlers'
+import { createLoadingLoader, showNotification } from './handlers'
 import {
   changeUserName,
   userAuthentification,
@@ -72,7 +72,7 @@ function createPopup(type: string) {
   contentButton.type = 'submit'
   contentButton.textContent = TYPE_MODAL_WINDOW[type].BUTTON_GO
 
-  const spinner = createLoadingLoader()
+  const loader = createLoadingLoader()
 
   let linkToCode = new DocumentFragment() as any
 
@@ -105,13 +105,13 @@ function createPopup(type: string) {
 
   popupTitle.append(titleText, titleClose)
 
-  contentForm.append(contentInput, contentButton, linkToCode, spinner)
+  contentForm.append(contentInput, contentButton, linkToCode, loader)
   popupContent.append(contentTitle, contentForm)
 
   popupContainer.append(popupTitle, popupContent)
   popup.append(popupContainer)
 
-  UI_ELEMENTS.BODY.append(popup)
+  if (UI_ELEMENTS.BODY) UI_ELEMENTS.BODY.append(popup)
 }
 
 // ==================  Функции на кнопках модального окна ==================
@@ -124,7 +124,7 @@ function handleWithForm(event: Event, type: string) {
   if (!value.length) {
     return
   }
-  showLoaderAndDisableForm(true)
+  // showLoaderAndDisableForm(true)
 
   // const value = event.target[0].value
   // if (!value.length) return
@@ -142,7 +142,11 @@ function handleWithForm(event: Event, type: string) {
       if (value !== Cookies.get('chat-name')) {
         changeUserName(value)
       } else {
-        showLoaderAndDisableForm(false)
+        showNotification(
+          NOTE.TYPE,
+          NOTE.SAME_USERNAME,
+          Cookies.get('chat-name')
+        )
       }
       break
     default:

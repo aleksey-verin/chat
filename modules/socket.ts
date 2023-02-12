@@ -6,15 +6,12 @@ import { UI_ELEMENTS } from './ui-elements'
 const url = 'wss://edu.strada.one/websockets?'
 
 function connectionLight(action: boolean) {
-  if (action) {
-    UI_ELEMENTS.CONNECTION_LIGHT.classList.add('connect')
-  } else {
-    UI_ELEMENTS.CONNECTION_LIGHT.classList.remove('connect')
-  }
+  action
+    ? UI_ELEMENTS.CONNECTION_LIGHT.classList.add('connect')
+    : UI_ELEMENTS.CONNECTION_LIGHT.classList.remove('connect')
 }
 
 function socketConnection(token: string | null) {
-  // debugger
   if (!token) {
     return
   }
@@ -23,7 +20,7 @@ function socketConnection(token: string | null) {
 
   socket.onopen = () => {
     connectionLight(true)
-    console.log('Connected')
+    // console.log('Connected')
   }
   socket.onmessage = (event) => {
     const {

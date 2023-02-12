@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 import { format, parseISO } from 'date-fns'
-import { showLoaderForMessages, showNotification } from './handlers'
+import { showLoader, showNotification } from './handlers'
 import { ERROR, UI_ELEMENTS } from './ui-elements'
 import { makeFetchRequest, url, _messages } from './fetch'
 
@@ -31,7 +31,7 @@ interface iRootMessages {
 }
 
 async function downloadMessagesFromTheServer(token: string) {
-  showLoaderForMessages(true)
+  showLoader(true, 'messages')
 
   try {
     const headers = { Authorization: `Bearer ${token}` }
@@ -46,7 +46,7 @@ async function downloadMessagesFromTheServer(token: string) {
   } catch (error) {
     showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
   } finally {
-    showLoaderForMessages(false)
+    showLoader(false, 'messages')
   }
 }
 

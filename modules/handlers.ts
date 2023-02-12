@@ -16,7 +16,7 @@ function showNotification(
     noteBlock.classList.add('note-container')
   }
   noteBlock.addEventListener('click', () => noteBlock.remove())
-  UI_ELEMENTS.BODY.append(noteBlock)
+  if (UI_ELEMENTS.BODY) UI_ELEMENTS.BODY.append(noteBlock)
   setTimeout(() => {
     noteBlock.classList.add('active')
     setTimeout(() => {
@@ -32,7 +32,7 @@ function showNotification(
 
 const theme: string = JSON.parse(localStorage.getItem('theme') || '')
 if (theme) {
-  UI_ELEMENTS.BODY.setAttribute('data-theme', theme)
+  if (UI_ELEMENTS.BODY) UI_ELEMENTS.BODY.setAttribute('data-theme', theme)
 }
 if (theme === 'dark') {
   UI_ELEMENTS.THEME_SWITCHER.checked = true
@@ -40,10 +40,10 @@ if (theme === 'dark') {
 
 UI_ELEMENTS.THEME_SWITCHER.addEventListener('change', (event) => {
   if ((event.target as HTMLInputElement).checked) {
-    UI_ELEMENTS.BODY.setAttribute('data-theme', 'dark')
+    if (UI_ELEMENTS.BODY) UI_ELEMENTS.BODY.setAttribute('data-theme', 'dark')
     localStorage.setItem('theme', JSON.stringify('dark'))
   } else {
-    UI_ELEMENTS.BODY.setAttribute('data-theme', 'light')
+    if (UI_ELEMENTS.BODY) UI_ELEMENTS.BODY.setAttribute('data-theme', 'light')
     localStorage.setItem('theme', JSON.stringify('light'))
   }
 })
@@ -58,39 +58,72 @@ function createLoadingLoader(): HTMLElement {
   return loader
 }
 
-function showLoaderForMessages(switcher: boolean): void {
-  const loader = document.querySelector('.loader-messages') as HTMLImageElement
-  if (switcher) {
-    loader.classList.add('active')
-  } else {
-    loader.classList.remove('active')
+function showLoader(switcher: boolean, type: string): void {
+  const loader: HTMLImageElement | null = document.querySelector(
+    type === 'popup' ? '.loader' : '.loader-messages'
+  )
+  if (loader !== null) {
+    switcher
+      ? loader.classList.add('active')
+      : loader.classList.remove('active')
   }
 }
 
-function showLoaderAndDisableForm(switcher: boolean): void {
-  const loader = document.querySelector('.loader')
-  const linkToCode = document.querySelector('.link-code')
-  const input = document.querySelector('.content-input') as HTMLInputElement
-  const button = document.querySelector('.content-btn') as HTMLButtonElement
+function disableTheForm(switcher: boolean): void {
+  const linkToCode: HTMLAnchorElement | null =
+    document.querySelector('.link-code')
+  const input: HTMLInputElement | null =
+    document.querySelector('.content-input')
+  const button: HTMLButtonElement | null =
+    document.querySelector('.content-btn')
 
   if (input) input.disabled = switcher
+
   if (button) button.disabled = switcher
 
-  if (loader) {
-    if (switcher) {
-      loader.classList.add('active')
-    } else {
-      loader.classList.remove('active')
-    }
-  }
   if (linkToCode) {
-    if (switcher) {
-      linkToCode.classList.add('disabled')
-    } else {
-      linkToCode.classList.remove('disabled')
-    }
+    switcher
+      ? linkToCode.classList.add('disabled')
+      : linkToCode.classList.remove('disabled')
   }
 }
+
+// function showLoaderForMessages(switcher: boolean): void {
+//   const loader: HTMLImageElement | null =
+//     document.querySelector('.loader-messages')
+//   if (loader !== null) {
+//     switcher
+//       ? loader.classList.add('active')
+//       : loader.classList.remove('active')
+//   }
+// }
+
+// function showLoaderAndDisableForm(switcher: boolean): void {
+//   const loader = document.querySelector('.loader')
+//   const linkToCode = document.querySelector('.link-code')
+//   const input = document.querySelector(
+//     '.content-input'
+//   ) as HTMLInputElement | null
+//   const button = document.querySelector('.content-btn') as HTMLButtonElement
+
+//   if (input) input.disabled = switcher
+//   if (button) button.disabled = switcher
+
+//   if (loader) {
+//     if (switcher) {
+//       loader.classList.add('active')
+//     } else {
+//       loader.classList.remove('active')
+//     }
+//   }
+//   if (linkToCode) {
+//     if (switcher) {
+//       linkToCode.classList.add('disabled')
+//     } else {
+//       linkToCode.classList.remove('disabled')
+//     }
+//   }
+// }
 
 // ==================  Прокрутка вниз  ==================
 
@@ -143,7 +176,7 @@ UI_ELEMENTS.FORM_TEXTAREA.addEventListener('input', (e) => {
 export {
   showNotification,
   createLoadingLoader,
-  showLoaderForMessages,
-  showLoaderAndDisableForm,
+  showLoader,
+  disableTheForm,
   scrollToLastUserMessage,
 }

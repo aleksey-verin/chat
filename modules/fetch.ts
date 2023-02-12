@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie'
-import { showLoaderAndDisableForm, showNotification } from './handlers'
+import { showLoader, disableTheForm, showNotification } from './handlers'
 import { downloadMessagesFromTheServer } from './messages'
 import { createPopup, removePopup } from './popup'
 import socketConnection from './socket'
@@ -46,7 +46,8 @@ async function makeFetchRequest(
 // ==================  Идентификация пользователя ==================
 
 async function userIndentification(userEmail: string) {
-  showLoaderAndDisableForm(true)
+  showLoader(true, 'popup')
+  disableTheForm(true)
 
   try {
     const headers = { 'Content-Type': 'application/json' }
@@ -58,14 +59,16 @@ async function userIndentification(userEmail: string) {
   } catch (error) {
     showNotification(ERROR.TYPE, ERROR.EMAIL_ERROR)
   } finally {
-    showLoaderAndDisableForm(false)
+    showLoader(false, 'popup')
+    disableTheForm(false)
   }
 }
 
 // ==================  Авторизация пользователя ==================
 
 async function userAuthentification(token: string) {
-  showLoaderAndDisableForm(true)
+  showLoader(true, 'popup')
+  disableTheForm(true)
 
   try {
     const headers = { Authorization: `Bearer ${token}` }
@@ -85,14 +88,16 @@ async function userAuthentification(token: string) {
       showNotification(ERROR.TYPE, ERROR.CODE_ERROR)
     }
   } finally {
-    showLoaderAndDisableForm(false)
+    showLoader(false, 'popup')
+    disableTheForm(false)
   }
 }
 
 // ==================  Изменение имени пользователя ==================
 
 async function changeUserName(newUserName: string) {
-  showLoaderAndDisableForm(true)
+  showLoader(true, 'popup')
+  disableTheForm(true)
 
   try {
     const headers = {
@@ -112,8 +117,9 @@ async function changeUserName(newUserName: string) {
   } catch (error) {
     showNotification(ERROR.TYPE, ERROR.SERVER_ERROR)
   } finally {
-    showLoaderAndDisableForm(false)
-    // window.location.reload()
+    showLoader(false, 'popup')
+    disableTheForm(false)
+    window.location.reload()
   }
 }
 

@@ -573,9 +573,10 @@ function startConnections() {
     (0, _socketDefault.default)(isAuth);
 }
 // ==================  Кнопка "Настройки"  ==================
-(0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS.addEventListener("click", ()=>{
+if ((0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS) (0, _uiElements.UI_ELEMENTS).BUTTONS.SETTINGS.addEventListener("click", ()=>{
     (0, _popup.createPopup)((0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME);
-}) // // ==================  Кнопка "Выйти"  ==================
+});
+ // // ==================  Кнопка "Выйти"  ==================
  // function loginOut() {
  //   // socket.close(1000, 'работа закончена')
  //   Cookies.remove('chat-name')
@@ -585,7 +586,6 @@ function startConnections() {
  //   window.location.reload()
  // }
  // UI_ELEMENTS.BUTTON_EXIT.addEventListener('click', loginOut)
-;
 
 },{"js-cookie":"c8bBu","./messages":"dqxAp","./popup":"bj9bb","./socket":"dqoPl","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"c8bBu":[function(require,module,exports) {
 (function(global, factory) {
@@ -694,7 +694,7 @@ const step = 20;
 let startPosition = 0;
 let finalPosition = 0;
 async function downloadMessagesFromTheServer(token) {
-    (0, _handlers.showLoaderForMessages)(true);
+    (0, _handlers.showLoader)(true, "messages");
     try {
         const headers = {
             Authorization: `Bearer ${token}`
@@ -706,7 +706,7 @@ async function downloadMessagesFromTheServer(token) {
     } catch (error) {
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     } finally{
-        (0, _handlers.showLoaderForMessages)(false);
+        (0, _handlers.showLoader)(false, "messages");
     }
 }
 // ==================  Подгрузка сообщений при скролле  ==================
@@ -750,7 +750,7 @@ function addMessage(text, email, name, time, type) {
     else (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.prepend(message);
 }
 
-},{"js-cookie":"c8bBu","date-fns":"9yHCA","./handlers":"3t0ns","./ui-elements":"9rmm2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./fetch":"aWsMw"}],"9yHCA":[function(require,module,exports) {
+},{"js-cookie":"c8bBu","date-fns":"9yHCA","./handlers":"3t0ns","./ui-elements":"9rmm2","./fetch":"aWsMw","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9yHCA":[function(require,module,exports) {
 // This file is generated automatically by `scripts/build/indices.ts`. Please, don't change it.
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -3803,8 +3803,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "showNotification", ()=>showNotification);
 parcelHelpers.export(exports, "createLoadingLoader", ()=>createLoadingLoader);
-parcelHelpers.export(exports, "showLoaderForMessages", ()=>showLoaderForMessages);
-parcelHelpers.export(exports, "showLoaderAndDisableForm", ()=>showLoaderAndDisableForm);
+parcelHelpers.export(exports, "showLoader", ()=>showLoader);
+parcelHelpers.export(exports, "disableTheForm", ()=>disableTheForm);
 parcelHelpers.export(exports, "scrollToLastUserMessage", ()=>scrollToLastUserMessage);
 var _uiElements = require("./ui-elements");
 // ==================  ОПОВЕЩЕНИЯ / ОШИБКИ ==================
@@ -3814,7 +3814,7 @@ function showNotification(type, noteMessage, name = "") {
     if (type === (0, _uiElements.ERROR).TYPE) noteBlock.classList.add("error-container");
     if (type === (0, _uiElements.NOTE).TYPE) noteBlock.classList.add("note-container");
     noteBlock.addEventListener("click", ()=>noteBlock.remove());
-    (0, _uiElements.UI_ELEMENTS).BODY.append(noteBlock);
+    if ((0, _uiElements.UI_ELEMENTS).BODY) (0, _uiElements.UI_ELEMENTS).BODY.append(noteBlock);
     setTimeout(()=>{
         noteBlock.classList.add("active");
         setTimeout(()=>{
@@ -3827,14 +3827,16 @@ function showNotification(type, noteMessage, name = "") {
 }
 // ==================  СВЕТЛАЯ / ТЕМНАЯ ТЕМА   ==================
 const theme = JSON.parse(localStorage.getItem("theme") || "");
-if (theme) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", theme);
+if (theme) {
+    if ((0, _uiElements.UI_ELEMENTS).BODY) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", theme);
+}
 if (theme === "dark") (0, _uiElements.UI_ELEMENTS).THEME_SWITCHER.checked = true;
 (0, _uiElements.UI_ELEMENTS).THEME_SWITCHER.addEventListener("change", (event)=>{
     if (event.target.checked) {
-        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "dark");
+        if ((0, _uiElements.UI_ELEMENTS).BODY) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "dark");
         localStorage.setItem("theme", JSON.stringify("dark"));
     } else {
-        (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "light");
+        if ((0, _uiElements.UI_ELEMENTS).BODY) (0, _uiElements.UI_ELEMENTS).BODY.setAttribute("data-theme", "light");
         localStorage.setItem("theme", JSON.stringify("light"));
     }
 });
@@ -3848,27 +3850,51 @@ function createLoadingLoader() {
     loader.alt = "loader";
     return loader;
 }
-function showLoaderForMessages(switcher) {
-    const loader = document.querySelector(".loader-messages");
-    if (switcher) loader.classList.add("active");
-    else loader.classList.remove("active");
+function showLoader(switcher, type) {
+    const loader = document.querySelector(type === "popup" ? ".loader" : ".loader-messages");
+    if (loader !== null) switcher ? loader.classList.add("active") : loader.classList.remove("active");
 }
-function showLoaderAndDisableForm(switcher) {
-    const loader = document.querySelector(".loader");
+function disableTheForm(switcher) {
     const linkToCode = document.querySelector(".link-code");
     const input = document.querySelector(".content-input");
     const button = document.querySelector(".content-btn");
     if (input) input.disabled = switcher;
     if (button) button.disabled = switcher;
-    if (loader) {
-        if (switcher) loader.classList.add("active");
-        else loader.classList.remove("active");
-    }
-    if (linkToCode) {
-        if (switcher) linkToCode.classList.add("disabled");
-        else linkToCode.classList.remove("disabled");
-    }
+    if (linkToCode) switcher ? linkToCode.classList.add("disabled") : linkToCode.classList.remove("disabled");
 }
+// function showLoaderForMessages(switcher: boolean): void {
+//   const loader: HTMLImageElement | null =
+//     document.querySelector('.loader-messages')
+//   if (loader !== null) {
+//     switcher
+//       ? loader.classList.add('active')
+//       : loader.classList.remove('active')
+//   }
+// }
+// function showLoaderAndDisableForm(switcher: boolean): void {
+//   const loader = document.querySelector('.loader')
+//   const linkToCode = document.querySelector('.link-code')
+//   const input = document.querySelector(
+//     '.content-input'
+//   ) as HTMLInputElement | null
+//   const button = document.querySelector('.content-btn') as HTMLButtonElement
+//   if (input) input.disabled = switcher
+//   if (button) button.disabled = switcher
+//   if (loader) {
+//     if (switcher) {
+//       loader.classList.add('active')
+//     } else {
+//       loader.classList.remove('active')
+//     }
+//   }
+//   if (linkToCode) {
+//     if (switcher) {
+//       linkToCode.classList.add('disabled')
+//     } else {
+//       linkToCode.classList.remove('disabled')
+//     }
+//   }
+// }
 // ==================  Прокрутка вниз  ==================
 function scrollToLastUserMessage() {
     (0, _uiElements.UI_ELEMENTS).MESSAGE_LIST.scrollTo({
@@ -3952,7 +3978,8 @@ const NOTE = {
     TYPE: "notification",
     SEND_EMAIL: "Письмо с кодом успешно отправлено. Проверьте почтовый ящик..",
     SUCCESS: "Вход выполнен! Ваше имя в чате: ",
-    CHANGE_USERNAME: "Отлично! Вы поменяли имя на: "
+    CHANGE_USERNAME: "Отлично! Вы поменяли имя на: ",
+    SAME_USERNAME: "Не сохранено. Ваше имя в чате: "
 };
 const TYPE_MODAL_WINDOW = {
     LOGIN: {
@@ -4018,7 +4045,8 @@ async function makeFetchRequest(url, method, headers, body) {
 }
 // ==================  Идентификация пользователя ==================
 async function userIndentification(userEmail) {
-    (0, _handlers.showLoaderAndDisableForm)(true);
+    (0, _handlers.showLoader)(true, "popup");
+    (0, _handlers.disableTheForm)(true);
     try {
         const headers = {
             "Content-Type": "application/json"
@@ -4033,12 +4061,14 @@ async function userIndentification(userEmail) {
     } catch (error) {
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).EMAIL_ERROR);
     } finally{
-        (0, _handlers.showLoaderAndDisableForm)(false);
+        (0, _handlers.showLoader)(false, "popup");
+        (0, _handlers.disableTheForm)(false);
     }
 }
 // ==================  Авторизация пользователя ==================
 async function userAuthentification(token) {
-    (0, _handlers.showLoaderAndDisableForm)(true);
+    (0, _handlers.showLoader)(true, "popup");
+    (0, _handlers.disableTheForm)(true);
     try {
         const headers = {
             Authorization: `Bearer ${token}`
@@ -4062,12 +4092,14 @@ async function userAuthentification(token) {
         if (error.message === "Failed to fetch") (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
         else (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).CODE_ERROR);
     } finally{
-        (0, _handlers.showLoaderAndDisableForm)(false);
+        (0, _handlers.showLoader)(false, "popup");
+        (0, _handlers.disableTheForm)(false);
     }
 }
 // ==================  Изменение имени пользователя ==================
 async function changeUserName(newUserName) {
-    (0, _handlers.showLoaderAndDisableForm)(true);
+    (0, _handlers.showLoader)(true, "popup");
+    (0, _handlers.disableTheForm)(true);
     try {
         const headers = {
             Authorization: `Bearer ${(0, _jsCookieDefault.default).get("chat-token")}`,
@@ -4085,8 +4117,9 @@ async function changeUserName(newUserName) {
     } catch (error) {
         (0, _handlers.showNotification)((0, _uiElements.ERROR).TYPE, (0, _uiElements.ERROR).SERVER_ERROR);
     } finally{
-        (0, _handlers.showLoaderAndDisableForm)(false);
-    // window.location.reload()
+        (0, _handlers.showLoader)(false, "popup");
+        (0, _handlers.disableTheForm)(false);
+        window.location.reload();
     }
 }
 
@@ -4149,7 +4182,7 @@ function createPopup(type) {
     contentButton.classList.add("content-btn");
     contentButton.type = "submit";
     contentButton.textContent = (0, _uiElements.TYPE_MODAL_WINDOW)[type].BUTTON_GO;
-    const spinner = (0, _handlers.createLoadingLoader)();
+    const loader = (0, _handlers.createLoadingLoader)();
     let linkToCode = new DocumentFragment();
     function openOtherPopup() {
         removePopup();
@@ -4174,11 +4207,11 @@ function createPopup(type) {
         });
     }
     popupTitle.append(titleText, titleClose);
-    contentForm.append(contentInput, contentButton, linkToCode, spinner);
+    contentForm.append(contentInput, contentButton, linkToCode, loader);
     popupContent.append(contentTitle, contentForm);
     popupContainer.append(popupTitle, popupContent);
     popup.append(popupContainer);
-    (0, _uiElements.UI_ELEMENTS).BODY.append(popup);
+    if ((0, _uiElements.UI_ELEMENTS).BODY) (0, _uiElements.UI_ELEMENTS).BODY.append(popup);
 }
 // ==================  Функции на кнопках модального окна ==================
 function handleWithForm(event, type) {
@@ -4187,7 +4220,7 @@ function handleWithForm(event, type) {
     const input = target.elements[0];
     const value = input.value;
     if (!value.length) return;
-    (0, _handlers.showLoaderAndDisableForm)(true);
+    // showLoaderAndDisableForm(true)
     // const value = event.target[0].value
     // if (!value.length) return
     // showLoaderAndDisableForm(true)
@@ -4200,7 +4233,7 @@ function handleWithForm(event, type) {
             break;
         case (0, _uiElements.TYPE_MODAL_WINDOW).SETTINGS.NAME:
             if (value !== (0, _jsCookieDefault.default).get("chat-name")) (0, _fetch.changeUserName)(value);
-            else (0, _handlers.showLoaderAndDisableForm)(false);
+            else (0, _handlers.showNotification)((0, _uiElements.NOTE).TYPE, (0, _uiElements.NOTE).SAME_USERNAME, (0, _jsCookieDefault.default).get("chat-name"));
             break;
         default:
             break;
@@ -4217,16 +4250,14 @@ var _messages = require("./messages");
 var _uiElements = require("./ui-elements");
 const url = "wss://edu.strada.one/websockets?";
 function connectionLight(action) {
-    if (action) (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.add("connect");
-    else (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
+    action ? (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.add("connect") : (0, _uiElements.UI_ELEMENTS).CONNECTION_LIGHT.classList.remove("connect");
 }
 function socketConnection(token) {
-    // debugger
     if (!token) return;
     const socket = new WebSocket(`${url}${token}`);
     socket.onopen = ()=>{
         connectionLight(true);
-        console.log("Connected");
+    // console.log('Connected')
     };
     socket.onmessage = (event)=>{
         const { createdAt , text , user: { email , name  }  } = JSON.parse(event.data);

@@ -16,10 +16,11 @@ function startConnections() {
 }
 
 // ==================  Кнопка "Настройки"  ==================
-
-UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
-  createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME)
-})
+if (UI_ELEMENTS.BUTTONS.SETTINGS) {
+  UI_ELEMENTS.BUTTONS.SETTINGS.addEventListener('click', () => {
+    createPopup(TYPE_MODAL_WINDOW.SETTINGS.NAME)
+  })
+}
 
 // // ==================  Кнопка "Выйти"  ==================
 
